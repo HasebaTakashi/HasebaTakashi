@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chInput = document.getElementById('ch-input');
 
     // Info panel elements
+    const statusLightEl = document.getElementById('status-light');
+    const statusTextEl = document.getElementById('status-text');
     const maxValueEl = document.getElementById('max-value');
     const minValueEl = document.getElementById('min-value');
     const aveValueEl = document.getElementById('ave-value');
@@ -16,21 +18,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const terminalVolValueEl = document.getElementById('terminal-vol-value');
     const datetimeValueEl = document.getElementById('datetime-value');
 
+    // --- Status Update Function ---
+    function updateStatus(status, message) {
+        statusLightEl.className = 'light'; // Reset classes
+        statusLightEl.classList.add(status); // 'connecting', 'connected', or 'disconnected'
+        statusTextEl.textContent = message;
+
+        // Also update text color for consistency
+        const colorMap = {
+            connected: 'var(--accent-color)',
+            disconnected: '#dc3545', // Red
+            connecting: '#ffc107'     // Yellow
+        };
+        statusTextEl.style.color = colorMap[status] || 'var(--primary-text-color)';
+    }
+
     // --- WebSocket Setup ---
     let ws;
-    // Use wss:// if the main page is served over https://
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const socketUrl = `${protocol}//${window.location.host}/socket`;
 
     function connect() {
+        updateStatus('connecting', 'Connecting...');
         ws = new WebSocket(socketUrl);
 
         ws.onopen = () => {
             console.log('WebSocket connection established.');
+            updateStatus('connected', 'Connected');
         };
 
         ws.onmessage = (event) => {
             try {
+                if (!statusLightEl.classList.contains('connected')) {
+                    updateStatus('connected', 'Connected');
+                }
                 const data = JSON.parse(event.data);
                 updateChart(data);
                 updateInfoPanel(data);
@@ -41,12 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ws.onclose = () => {
             console.log('WebSocket connection closed. Attempting to reconnect in 3 seconds...');
-            setTimeout(connect, 3000); // Simple reconnect logic
+            updateStatus('disconnected', 'Disconnected');
+            setTimeout(connect, 3000);
         };
 
         ws.onerror = (error) => {
             console.error('WebSocket error:', error);
-            ws.close(); // This will trigger the onclose handler for reconnection
+            updateStatus('disconnected', 'Error');
+            ws.close();
         };
     }
 
@@ -62,56 +85,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('waveChart').getContext('2d');
     if (typeof Chart === 'undefined') {
         console.error('Chart.js is not loaded. Please download it and place it in js/chart.js');
-        // Display an error message on the canvas
         ctx.font = '16px Arial';
         ctx.fillStyle = 'red';
         ctx.fillText('Error: Chart.js is not loaded.', 10, 50);
-        return; // Stop execution if Chart.js is not available
+        return;
     }
 
     const waveChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [], // Time data
+            labels: [],
             datasets: [{
                 label: 'Waveform',
-                data: [], // Value data
-                borderColor: 'rgba(0, 255, 0, 1)', // Green line
-                backgroundColor: 'rgba(0, 255, 0, 0.1)', // Green area under the line
+                data: [],
+                borderColor: 'rgba(0, 255, 0, 1)',
+                backgroundColor: 'rgba(0, 255, 0, 0.1)',
                 borderWidth: 1.5,
-                pointRadius: 0, // Hide points for a smoother line
-                tension: 0.1 // Slight curve to the line
+                pointRadius: 0,
+                tension: 0.1
             }]
         },
         options: {
             maintainAspectRatio: false,
-            animation: false, // Disable animation for real-time data
+            animation: false,
             scales: {
                 x: {
-                    type: 'linear', // Treat x-axis as a continuous series of numbers
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
-                    }
+                    type: 'linear',
+                    ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.2)' }
                 },
                 y: {
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.2)'
-                    }
+                    ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.2)' }
                 }
             },
             plugins: {
-                legend: {
-                    display: false // Hide the legend
-                },
-                tooltip: {
-                    enabled: true // Enable tooltips on hover
-                }
+                legend: { display: false },
+                tooltip: { enabled: true }
             }
         }
     });
@@ -121,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data && data.time && data.value) {
             const timeArray = data.time.split(',').map(Number);
             const valueArray = data.value.split(',').map(Number);
-
             waveChart.data.labels = timeArray;
             waveChart.data.datasets[0].data = valueArray;
             waveChart.update();
