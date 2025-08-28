@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Data Viewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 1em; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .data-item { margin-bottom: 0.5em; }
+        .label { font-weight: bold; display: inline-block; width: 200px; }
+        .value { font-family: monospace; }
+        .level-0 { color: green; }
+        .level-1 { color: orange; }
+        .level-2 { color: red; }
+        .level-3 { color: darkred; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MQTT Real-time Data</h1>
+        <div id="status">Connecting to server...</div>
+        <hr>
+        <div class="data-item">
+            <span class="label">診断ID:</span>
+            <span id="diag-id" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">モード:</span>
+            <span id="mode" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">現在の学習済データ数:</span>
+            <span id="learned-count" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">設定した学習データ数:</span>
+            <span id="target-count" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">診断レベル:</span>
+            <span id="diag-level" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">計算結果:</span>
+            <span id="result" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">レベル1しきい値:</span>
+            <span id="threshold-1" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">レベル2しきい値:</span>
+            <span id="threshold-2" class="value">N/A</span>
+        </div>
+        <div class="data-item">
+            <span class="label">レベル3しきい値:</span>
+            <span id="threshold-3" class="value">N/A</span>
+        </div>
+    </div>
+    <script src="/js/app.js"></script>
+</body>
+</html>
