@@ -19,8 +19,10 @@ set :sockets, []
 mqtt = MqttClient.new('127.0.0.1', ['DetectResult'])
 mqtt.connect
 mqtt.recieve_start do |_topic, message|
-  puts "Broadcasting message to #{settings.sockets.count} clients: #{message}"
-  settings.sockets.each { |s| s.send(message) }
+  # WebSocketでテキストフレームとして送信されるように、エンコーディングをUTF-8に変換
+  message_as_utf8 = message.encode('UTF-8', invalid: :replace, undef: :replace)
+  puts "Broadcasting message to #{settings.sockets.count} clients: #{message_as_utf8}"
+  settings.sockets.each { |s| s.send(message_as_utf8) }
 end
 
 get '/' do
