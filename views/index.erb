@@ -15,7 +15,9 @@
         .level-1 { color: orange; }
         .level-2 { color: red; }
         .level-3 { color: darkred; font-weight: bold; }
+        .chart-container { margin-top: 2em; }
     </style>
+    <script src="/js/chart.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -62,6 +64,10 @@
         <div class="data-item">
             <span class="label">レベル3しきい値:</span>
             <span id="threshold-3" class="value">N/A</span>
+        </div>
+        <div class="chart-container">
+            <h2>計算結果 トレンドグラフ</h2>
+            <canvas id="result-chart"></canvas>
         </div>
         </div>
     </div>
