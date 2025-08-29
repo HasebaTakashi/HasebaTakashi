@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderWidth: 1,
                     borderDash: [5, 5],
                     fill: false,
+                    pointRadius: 0,
                 },
                 {
                     label: 'レベル2しきい値',
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderWidth: 1,
                     borderDash: [5, 5],
                     fill: false,
+                    pointRadius: 0,
                 },
                 {
                     label: 'レベル3しきい値',
@@ -57,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderWidth: 1,
                     borderDash: [5, 5],
                     fill: false,
+                    pointRadius: 0,
                 },
             ],
         },
