@@ -7,6 +7,7 @@
     <style>
         body { font-family: sans-serif; padding: 1em; }
         .container { max-width: 600px; margin: 0 auto; }
+        .selector-container { margin-bottom: 1em; }
         .data-item { margin-bottom: 0.5em; }
         .label { font-weight: bold; display: inline-block; width: 200px; }
         .value { font-family: monospace; }
@@ -21,12 +22,17 @@
         <h1>MQTT Real-time Data</h1>
         <div id="status">Connecting to server...</div>
         <hr>
-        <div class="data-item">
-            <span class="label">診断ID:</span>
-            <span id="diag-id" class="value">N/A</span>
+        <div class="selector-container">
+            <label for="diag-id-selector" class="label">表示する診断ID:</label>
+            <select id="diag-id-selector"></select>
         </div>
-        <div class="data-item">
-            <span class="label">モード:</span>
+        <div id="data-display">
+            <div class="data-item">
+                <span class="label">診断ID:</span>
+                <span id="diag-id" class="value">N/A</span>
+            </div>
+            <div class="data-item">
+                <span class="label">モード:</span>
             <span id="mode" class="value">N/A</span>
         </div>
         <div class="data-item">
@@ -56,6 +62,7 @@
         <div class="data-item">
             <span class="label">レベル3しきい値:</span>
             <span id="threshold-3" class="value">N/A</span>
+        </div>
         </div>
     </div>
     <script src="/js/app.js"></script>
