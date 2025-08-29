@@ -3,6 +3,7 @@
 require 'sinatra'
 require 'faye/websocket'
 require 'puma'
+require 'json'
 
 require_relative 'mqtt_client'
 
@@ -52,5 +53,41 @@ get '/socket' do
   else
     # WebSocketリクエストでない場合はルートにリダイレクト
     redirect '/'
+  end
+end
+
+# --- Settings Editor API ---
+# NOTE: Due to sandbox restrictions, the settings file is located at `settings/detect_setting.json`
+# inside the project directory, not at the originally requested path.
+SETTINGS_FILE_PATH = File.expand_path('settings/detect_setting.json', __dir__)
+
+get '/settings_editor' do
+  erb :settings_editor
+end
+
+get '/api/settings' do
+  content_type :json
+  begin
+    File.read(SETTINGS_FILE_PATH)
+  rescue Errno::ENOENT
+    status 404
+    { error: 'Settings file not found.' }.to_json
+  end
+end
+
+post '/api/settings' do
+  request.body.rewind
+  begin
+    data = JSON.parse(request.body.read)
+    # Pretty-generate the JSON to make the file readable
+    File.write(SETTINGS_FILE_PATH, JSON.pretty_generate(data))
+    status 200
+    { success: 'Settings saved successfully.' }.to_json
+  rescue JSON::ParserError
+    status 400
+    { error: 'Invalid JSON format.' }.to_json
+  rescue => e
+    status 500
+    { error: "An error occurred: #{e.message}" }.to_json
   end
 end

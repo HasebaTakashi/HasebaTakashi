@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Editor</title>
+    <style>
+        body { font-family: sans-serif; padding: 1em; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header-link { float: right; font-size: 0.8em; }
+        .form-container { display: flex; flex-direction: column; gap: 2em; }
+        .setting-card { border: 1px solid #ccc; border-radius: 8px; padding: 1em; }
+        .setting-card h3 { margin-top: 0; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1em; }
+        .form-item { display: flex; flex-direction: column; }
+        .form-item label { font-weight: bold; margin-bottom: 0.25em; }
+        .form-item input { padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; }
+        .actions { margin-top: 2em; display: flex; gap: 1em; }
+        .actions button { padding: 0.75em 1.5em; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-save { background-color: #007bff; color: white; }
+        .notification { margin-top: 1em; padding: 1em; border-radius: 4px; display: none; }
+        .notification.success { background-color: #d4edda; color: #155724; }
+        .notification.error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="header-link">戻る</a>
+        <h1>設定編集</h1>
+
+        <div id="settings-form-container" class="form-container">
+            <!-- Settings will be dynamically inserted here -->
+        </div>
+
+        <div class="actions">
+            <button id="add-setting-btn" class="btn-add">設定を追加</button>
+            <button id="save-settings-btn" class="btn-save">保存</button>
+        </div>
+
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script src="/js/settings_editor.js"></script>
+</body>
+</html>
