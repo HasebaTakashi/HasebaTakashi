@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
         mode: document.getElementById('mode'),
         learnedCount: document.getElementById('learned-count'),
         targetCount: document.getElementById('target-count'),
-        diagLevel: document.getElementById('diag-level'),
+        diagLevelLamp: document.getElementById('diag-level-lamp'),
+        diagLevelText: document.getElementById('diag-level-text'),
         result: document.getElementById('result'),
         threshold1: document.getElementById('threshold-1'),
         threshold2: document.getElementById('threshold-2'),
@@ -80,8 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.mode.textContent = data[1] === '1' ? `学習 (${data[1]})` : `診断 (${data[1]})`;
         domElements.learnedCount.textContent = data[2];
         domElements.targetCount.textContent = data[3];
-        domElements.diagLevel.textContent = `レベル ${data[4]}`;
-        domElements.diagLevel.className = `value level-${data[4]}`;
+
+        const levelNum = data[4];
+        domElements.diagLevelLamp.className = `lamp level-${levelNum}`;
+        domElements.diagLevelText.textContent = `レベル ${levelNum}`;
+
         domElements.result.textContent = parseFloat(data[5]).toFixed(6);
         domElements.threshold1.textContent = data[6];
         domElements.threshold2.textContent = data[7];
