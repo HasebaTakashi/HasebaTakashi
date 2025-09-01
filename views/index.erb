@@ -11,7 +11,7 @@
             background-color: #f0f2f5;
             color: #333;
         }
-        .container { max-width: 800px; margin: 0 auto; }
+        .main-container { max-width: 900px; margin: 0 auto; }
         .header-link { float: right; font-size: 0.9em; margin-top: 1.5em; text-decoration: none; color: #007bff; }
         h1 { color: #111; }
         hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
@@ -20,7 +20,7 @@
         .selector-container select { padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; }
         #data-display {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1em;
         }
         .info-card {
@@ -58,7 +58,7 @@
     <script src="/js/chart.min.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
         <a href="/settings_editor" class="header-link">設定編集</a>
         <h1>MQTT Real-time Data</h1>
         <div id="status">Connecting to server...</div>
@@ -107,12 +107,13 @@
                 <div class="label">レベル3しきい値</div>
                 <div id="threshold-3" class="value">N/A</div>
             </div>
+        </div>
         <div class="chart-container">
             <h2>計算結果 トレンドグラフ</h2>
             <canvas id="result-chart"></canvas>
         </div>
-        </div>
     </div>
+
     <script src="/js/app.js"></script>
 </body>
 </html>
