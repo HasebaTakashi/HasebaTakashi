@@ -1,0 +1,42 @@
+<h2><%= @title %></h2>
+<form action="/analyzes/create" method="post">
+  <fieldset>
+    <legend>New Analyze Details</legend>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="AnalyzeName">AnalyzeName</label>
+        <input type="text" id="AnalyzeName" name="AnalyzeName" value="New_Analyze_Name" required>
+      </div>
+      <div class="form-group">
+        <label for="DataChannelID">DataChannelID</label>
+        <input type="text" id="DataChannelID" name="DataChannelID" value="1">
+      </div>
+      <div class="form-group">
+        <label for="AnalyzeType">AnalyzeType</label>
+        <input type="text" id="AnalyzeType" name="AnalyzeType" value="1">
+      </div>
+      <div class="form-group">
+        <label for="AnalyzePath">AnalyzePath</label>
+        <input type="text" id="AnalyzePath" name="AnalyzePath" value="">
+      </div>
+      <div class="form-group">
+        <label for="AnalyzeCommand">AnalyzeCommand</label>
+        <input type="text" id="AnalyzeCommand" name="AnalyzeCommand" value="">
+      </div>
+      <div class="form-group">
+        <label for="EnableAnalyze">EnableAnalyze</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="EnableAnalyze" value="1" checked>
+            Enable
+          </label>
+          <label>
+            <input type="radio" name="EnableAnalyze" value="0">
+            Disable
+          </label>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+  <button type="submit">Create Analyze Setting</button>
+</form>

@@ -1,0 +1,11 @@
+{
+  "BufferNo": 3,
+  "Buffer1Size": 10,
+  "Buffer2Size": 10,
+  "Buffer3Size": 10,
+  "ServerIP": "127.0.0.1",
+  "ServerPort": 45000,
+  "PulseCountThreshold": 12000,
+  "IdleRebootType": 0,
+  "IdleRebootTimeout": 900
+}

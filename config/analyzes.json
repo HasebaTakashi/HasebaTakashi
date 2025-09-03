@@ -1,0 +1,162 @@
+{
+  "Analyze1": {
+    "AnalyzeID": 1,
+    "AnalyzeName": "CH1_OA",
+    "DataChannelID": 1,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze2": {
+    "AnalyzeID": 2,
+    "AnalyzeName": "CH2_OA",
+    "DataChannelID": 2,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze3": {
+    "AnalyzeID": 3,
+    "AnalyzeName": "CH3_OA",
+    "DataChannelID": 3,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze4": {
+    "AnalyzeID": 4,
+    "AnalyzeName": "CH4_OA",
+    "DataChannelID": 4,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze5": {
+    "AnalyzeID": 5,
+    "AnalyzeName": "CH5_OA",
+    "DataChannelID": 5,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze6": {
+    "AnalyzeID": 6,
+    "AnalyzeName": "CH6_OA",
+    "DataChannelID": 6,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze7": {
+    "AnalyzeID": 7,
+    "AnalyzeName": "CH7_OA",
+    "DataChannelID": 7,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze8": {
+    "AnalyzeID": 8,
+    "AnalyzeName": "CH8_OA",
+    "DataChannelID": 8,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze9": {
+    "AnalyzeID": 9,
+    "AnalyzeName": "CH9_OA",
+    "DataChannelID": 9,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze10": {
+    "AnalyzeID": 10,
+    "AnalyzeName": "CH10_OA",
+    "DataChannelID": 10,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze11": {
+    "AnalyzeID": 11,
+    "AnalyzeName": "CH11_OA",
+    "DataChannelID": 11,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze12": {
+    "AnalyzeID": 12,
+    "AnalyzeName": "CH12_OA",
+    "DataChannelID": 12,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze13": {
+    "AnalyzeID": 13,
+    "AnalyzeName": "CH13_OA",
+    "DataChannelID": 13,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze14": {
+    "AnalyzeID": 14,
+    "AnalyzeName": "CH14_OA",
+    "DataChannelID": 14,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze15": {
+    "AnalyzeID": 15,
+    "AnalyzeName": "CH15_OA",
+    "DataChannelID": 15,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 1
+  },
+  "Analyze16": {
+    "AnalyzeID": 16,
+    "AnalyzeName": "CH16_OA",
+    "DataChannelID": 16,
+    "AnalyzeType": 1,
+    "AnalyzePath": "",
+    "AnalyzeCommand": "",
+    "AnalyzeArguments": null,
+    "EnableAnalyze": 0
+  }
+}

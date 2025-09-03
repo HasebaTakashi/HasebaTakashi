@@ -1,0 +1,56 @@
+{
+  "Device1": {
+    "DeviceID": 1,
+    "DeviceName": "DoctorBoard",
+    "ChannelNo": 17,
+    "EnableDevice": 0
+  },
+  "Device2": {
+    "DeviceID": 2,
+    "DeviceName": "WdMicro",
+    "ChannelNo": 9,
+    "EnableDevice": 0
+  },
+  "Device3": {
+    "DeviceID": 3,
+    "DeviceName": "MicroLogger",
+    "ChannelNo": 8,
+    "EnableDevice": 0
+  },
+  "Device4": {
+    "DeviceID": 4,
+    "DeviceName": "Vmonitor",
+    "ChannelNo": 17,
+    "EnableDevice": 0
+  },
+  "Device5": {
+    "DeviceID": 5,
+    "DeviceName": "LIS3DH",
+    "ChannelNo": 3,
+    "EnableDevice": 0
+  },
+  "Device6": {
+    "DeviceID": 6,
+    "DeviceName": "ADT7410",
+    "ChannelNo": 1,
+    "EnableDevice": 0
+  },
+  "Device7": {
+    "DeviceID": 7,
+    "DeviceName": "WS_Sensor",
+    "ChannelNo": 9,
+    "EnableDevice": 0
+  },
+  "Device8": {
+    "DeviceID": 8,
+    "DeviceName": "Vmonitor2",
+    "ChannelNo": 17,
+    "EnableDevice": 0
+  },
+  "Device9": {
+    "DeviceID": 99,
+    "DeviceName": "DummyDevice",
+    "ChannelNo": 17,
+    "EnableDevice": 1
+  }
+}

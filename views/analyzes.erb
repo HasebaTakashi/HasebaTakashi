@@ -1,0 +1,39 @@
+<h2><%= @title %></h2>
+
+<a href="/analyzes/new" class="button-add">Add New Analyze Setting</a>
+
+<form action="/<%= @config_key %>" method="post">
+  <% @config_data.sort.to_h.each do |analyze_key, analyze_data| %>
+    <fieldset>
+      <legend>
+        <%= h(analyze_key) %>
+        <form action="/analyzes/delete" method="post" class="delete-form">
+          <input type="hidden" name="key_to_delete" value="<%= analyze_key %>">
+          <button type="submit" class="button-delete" onclick="return confirm('Are you sure you want to delete <%= h(analyze_key) %>?');">Delete</button>
+        </form>
+      </legend>
+      <div class="form-grid">
+        <% analyze_data.each do |prop, value| %>
+          <div class="form-group">
+            <label for="<%= analyze_key %>_<%= prop %>"><%= h(prop) %></label>
+            <% if prop.to_s.downcase.include?('enable') %>
+              <div class="radio-group">
+                <label>
+                  <input type="radio" name="<%= @config_key %>[<%= analyze_key %>][<%= prop %>]" value="1" <%= 'checked' if value == 1 %>>
+                  Enable
+                </label>
+                <label>
+                  <input type="radio" name="<%= @config_key %>[<%= analyze_key %>][<%= prop %>]" value="0" <%= 'checked' if value == 0 %>>
+                  Disable
+                </label>
+              </div>
+            <% else %>
+              <input type="text" id="<%= analyze_key %>_<%= prop %>" name="<%= @config_key %>[<%= analyze_key %>][<%= prop %>]" value="<%= h(value) %>">
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </fieldset>
+  <% end %>
+  <button type="submit">Save All Changes</button>
+</form>

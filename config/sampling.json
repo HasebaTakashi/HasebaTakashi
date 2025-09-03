@@ -1,0 +1,18 @@
+{
+  "SamplingServerIP": "127.0.0.1",
+  "SamplingServerPort": 45000,
+  "MQTTHostIP": "127.0.0.1",
+  "MQTTPort": 1883,
+  "MQTTSendTopic": "AnalyzeData",
+  "MeasurementSec": 3,
+  "MeasurementIntervalSec": 3,
+  "OutputData": 1,
+  "MaxOutputFileNo": 10,
+  "OutputDataSec": 10,
+  "TriggerType": 1,
+  "PreTriggerSec": 0,
+  "TriggerInputDeviceID": 0,
+  "TriggerInputChannelNo": 0,
+  "OutputDataPath": "RawData",
+  "OutputDataChannel": "1,2,3"
+}

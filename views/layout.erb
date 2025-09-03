@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @title || "JSON Config Editor" %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>JSON Config Editor</h1>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <% CONFIG_FILES.each do |key, details| %>
+          <li><a href="/<%= key %>"><%= h(details[:name]) %></a></li>
+        <% end %>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <%= yield %>
+  </main>
+  <footer>
+    <p>Sinatra Config App</p>
+  </footer>
+</body>
+</html>

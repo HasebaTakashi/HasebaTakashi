@@ -1,0 +1,12 @@
+<h2><%= @title %></h2>
+<form action="/<%= @config_key %>" method="post">
+  <div class="form-grid">
+    <% @config_data.each do |key, value| %>
+      <div class="form-group">
+        <label for="<%= key %>"><%= h(key) %></label>
+        <input type="text" id="<%= key %>" name="<%= @config_key %>[<%= key %>]" value="<%= h(value) %>">
+      </div>
+    <% end %>
+  </div>
+  <button type="submit">Save Changes</button>
+</form>
