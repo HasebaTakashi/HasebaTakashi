@@ -1,0 +1,43 @@
+<h2>Sampling App Settings</h2>
+<p class="text-body-secondary">Adjust the buffer and server settings for the sampling application.</p>
+<hr>
+
+<form action="editsamplingapp" method="POST" class="mt-4">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label for="bufferno" class="form-label">Buffer Number</label>
+        <input type="number" class="form-control" id="bufferno" name="bufferno" value="<%= @sampling_app_setting.buffer_no %>" min="1" max="180">
+      </div>
+
+      <% @sampling_app_setting.buffer_no.times do |i| %>
+        <div class="mb-3">
+          <label for="buffer<%= i + 1 %>size" class="form-label">Buffer <%= i + 1 %> Size</label>
+          <input type="number" class="form-control" id="buffer<%= i + 1 %>size" name="buffer<%= i + 1 %>size" value="<%= @sampling_app_setting.buffer_size_hash[i + 1] %>" min="1" max="1800">
+        </div>
+      <% end %>
+    </div>
+
+    <div class="col-md-6">
+      <div class="mb-3">
+        <label for="serverip" class="form-label">Server IP</label>
+        <input type="text" class="form-control" id="serverip" name="serverip" value="<%= @sampling_app_setting.server_ip %>">
+      </div>
+
+      <div class="mb-3">
+        <label for="serverport" class="form-label">Server Port</label>
+        <input type="number" class="form-control" id="serverport" name="serverport" value="<%= @sampling_app_setting.server_port %>" min="10000" max="65536">
+      </div>
+
+      <div class="mb-3">
+        <label for="servertype" class="form-label">Server Type</label>
+        <input type="number" class="form-control" id="servertype" name="servertype" value="<%= @sampling_app_setting.server_type %>" min="1" max="2">
+        <div class="form-text">e.g., 1 for Type A, 2 for Type B</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <a href="/" class="btn btn-secondary">Back to Home</a>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>

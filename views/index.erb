@@ -1,0 +1,28 @@
+<div class="p-5 mb-4 bg-body-tertiary rounded-3">
+  <div class="container-fluid py-5">
+    <h1 class="display-5 fw-bold">Edge Unit Settings</h1>
+    <p class="col-md-8 fs-4">Configure and manage the edge unit settings from this central dashboard.</p>
+    <hr class="my-4">
+    <p><strong>Device Name:</strong> <%= @device_name %></p>
+    <p class="text-body-secondary">Version: <%= @version %> | Powered by NTN</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8">
+    <h2>Configuration Menu</h2>
+    <div class="list-group">
+      <a href="/samplingappsetting" class="list-group-item list-group-item-action">Sampling App Settings</a>
+      <a href="/devicesetting" class="list-group-item list-group-item-action">Device Settings</a>
+      <a href="/channelsetting" class="list-group-item list-group-item-action">Channel Settings</a>
+      <a href="/analyzeappsetting" class="list-group-item list-group-item-action">Analyze App Settings</a>
+      <a href="/analyzesetting" class="list-group-item list-group-item-action">Analyze Settings</a>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <h2>System Actions</h2>
+    <div class="d-grid gap-2">
+       <a href="/reboot" class="btn btn-danger btn-lg">Reboot System</a>
+    </div>
+  </div>
+</div>

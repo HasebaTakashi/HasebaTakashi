@@ -1,0 +1,62 @@
+<h2>Channel Settings</h2>
+<p class="text-body-secondary">Fine-tune the settings for each individual channel.</p>
+<hr>
+
+<form action="editchannel" method="POST" class="mt-4">
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Device ID</th>
+          <th>Index</th>
+          <th>Sampling Freq.</th>
+          <th>Gain</th>
+          <th>Max Range</th>
+          <th>Min Range</th>
+          <th>Resolution</th>
+          <th>Input Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @channel_settings.each do |setting| %>
+          <tr>
+            <th scope="row"><%= setting.channel_id %></th>
+            <td>
+              <input type="text" class="form-control" name="channelname<%= setting.channel_id %>" value="<%= setting.channel_name %>">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channeldeviceid<%= setting.channel_id %>" value="<%= setting.device_id %>" min="0" max="99">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channelindex<%= setting.channel_id %>" value="<%= setting.ch_index %>" min="0" max="99">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channelsamplingfrequency<%= setting.channel_id %>" value="<%= setting.sampling_freq %>" min="1" max="25600">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channelgain<%= setting.channel_id %>" value="<%= setting.gain %>" min="1" max="10">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channelmaxrange<%= setting.channel_id %>" value="<%= setting.max_range %>" min="-100.0" max="100.0" step="0.1">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channelminrange<%= setting.channel_id %>" value="<%= setting.min_range %>" min="-100.0" max="100.0" step="0.1">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="channelresolution<%= setting.channel_id %>" value="<%= setting.resolution %>" min="8" max="32">
+            </td>
+            <td>
+              <input type="number" class="form-control" name="inputtype<%= setting.channel_id %>" value="<%= setting.input_type %>" min="0" max="3">
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+  <a href="/" class="btn btn-secondary">Back to Home</a>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>

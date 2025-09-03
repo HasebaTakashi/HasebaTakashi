@@ -1,0 +1,94 @@
+<h2>Analyze App Settings</h2>
+<p class="text-body-secondary">Configure server connections, MQTT, and data output settings for the analysis application.</p>
+<hr>
+
+<form action="editanalyzeapp" method="POST" class="mt-4">
+  <div class="row">
+    <div class="col-md-6">
+      <h4>Server & MQTT</h4>
+      <div class="mb-3">
+        <label for="samplingserverip" class="form-label">Sampling Server IP</label>
+        <input type="text" class="form-control" id="samplingserverip" name="samplingserverip" value="<%= @analyze_app_setting.sampling_server_ip %>">
+      </div>
+      <div class="mb-3">
+        <label for="samplingserverport" class="form-label">Sampling Server Port</label>
+        <input type="number" class="form-control" id="samplingserverport" name="samplingserverport" value="<%= @analyze_app_setting.sampling_server_port %>" min="10000" max="65536">
+      </div>
+      <div class="mb-3">
+        <label for="mqtthostip" class="form-label">MQTT Host IP</label>
+        <input type="text" class="form-control" id="mqtthostip" name="mqtthostip" value="<%= @analyze_app_setting.mqtt_host_ip %>">
+      </div>
+      <div class="mb-3">
+        <label for="mqttport" class="form-label">MQTT Port</label>
+        <input type="number" class="form-control" id="mqttport" name="mqttport" value="<%= @analyze_app_setting.mqtt_port %>" min="1" max="65536">
+      </div>
+      <div class="mb-3">
+        <label for="mqttsendtopic" class="form-label">MQTT Send Topic</label>
+        <input type="text" class="form-control" id="mqttsendtopic" name="mqttsendtopic" value="<%= @analyze_app_setting.mqtt_send_topic %>">
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <h4>Trigger & Measurement</h4>
+      <div class="mb-3">
+        <label for="triggertype" class="form-label">Trigger Type</label>
+        <input type="number" class="form-control" id="triggertype" name="triggertype" value="<%= @analyze_app_setting.trigger_type %>" min="0" max="2">
+      </div>
+      <div class="mb-3">
+        <label for="measurementsec" class="form-label">Measurement Duration (sec)</label>
+        <input type="number" class="form-control" id="measurementsec" name="measurementsec" value="<%= @analyze_app_setting.measurement_sec %>" min="1" max="180">
+      </div>
+      <div class="mb-3">
+        <label for="measurementintervalsec" class="form-label">Measurement Interval (sec)</label>
+        <input type="number" class="form-control" id="measurementintervalsec" name="measurementintervalsec" value="<%= @analyze_app_setting.measurement_interval_sec %>" min="0" max="65536">
+      </div>
+      <div class="mb-3">
+        <label for="pretriggersec" class="form-label">Pre-Trigger (sec)</label>
+        <input type="number" class="form-control" id="pretriggersec" name="pretriggersec" value="<%= @analyze_app_setting.pretrigger_sec %>" min="0" max="180">
+      </div>
+      <div class="mb-3">
+        <label for="triggerinputdeviceid" class="form-label">Trigger Input Device ID</label>
+        <input type="number" class="form-control" id="triggerinputdeviceid" name="triggerinputdeviceid" value="<%= @analyze_app_setting.trigger_device_id %>" min="0" max="99">
+      </div>
+      <div class="mb-3">
+        <label for="triggerinputchannelid" class="form-label">Trigger Input Channel ID</label>
+        <input type="number" class="form-control" id="triggerinputchannelid" name="triggerinputchannelid" value="<%= @analyze_app_setting.trigger_channel_id %>" min="0" max="99">
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <div class="col-md-6">
+      <h4>Data Output</h4>
+      <div class="mb-3">
+        <label class="form-label">Output Data Stream</label>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="isoutputdata" id="output_enable" value="1" <%= 'checked' if @analyze_app_setting.is_output_data != 0 %>>
+          <label class="form-check-label" for="output_enable">Enable</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="isoutputdata" id="output_disable" value="0" <%= 'checked' if @analyze_app_setting.is_output_data == 0 %>>
+          <label class="form-check-label" for="output_disable">Disable</label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="maxoutputfileno" class="form-label">Max Output File Number</label>
+        <input type="number" class="form-control" id="maxoutputfileno" name="maxoutputfileno" value="<%= @analyze_app_setting.max_output_file_no %>" min="1" max="200">
+      </div>
+      <div class="mb-3">
+        <label for="outputdatasec" class="form-label">Output Data Duration (sec)</label>
+        <input type="number" class="form-control" id="outputdatasec" name="outputdatasec" value="<%= @analyze_app_setting.output_data_sec %>" min="1" max="3600">
+      </div>
+      <div class="mb-3">
+        <label for="outputdatapath" class="form-label">Output Data Path</label>
+        <input type="text" class="form-control" id="outputdatapath" name="outputdatapath" value="<%= @analyze_app_setting.output_data_path %>">
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <a href="/" class="btn btn-secondary">Back to Home</a>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
