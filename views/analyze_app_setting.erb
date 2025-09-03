@@ -1,0 +1,121 @@
+<div class="card">
+  <div class="card-header">
+    <h3><i class="bi bi-graph-up"></i> 分析アプリ設定</h3>
+  </div>
+  <div class="card-body">
+    <form action="/editanalyzeapp" method="post">
+      <fieldset>
+        <legend class="h5">サンプリングサーバー接続設定</legend>
+        <div class="row mb-3">
+          <label for="samplingserverip" class="col-sm-3 col-form-label">IPアドレス</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="samplingserverip" name="samplingserverip" value="<%= @analyze_app_setting.sampling_server_ip %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="samplingserverport" class="col-sm-3 col-form-label">ポート番号</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="samplingserverport" name="samplingserverport" value="<%= @analyze_app_setting.sampling_server_port %>">
+          </div>
+        </div>
+      </fieldset>
+
+      <hr>
+
+      <fieldset>
+        <legend class="h5">MQTT設定</legend>
+        <div class="row mb-3">
+          <label for="mqtthostip" class="col-sm-3 col-form-label">ホストIP</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="mqtthostip" name="mqtthostip" value="<%= @analyze_app_setting.mqtt_host_ip %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="mqttport" class="col-sm-3 col-form-label">ポート番号</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="mqttport" name="mqttport" value="<%= @analyze_app_setting.mqtt_port %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="mqttsendtopic" class="col-sm-3 col-form-label">送信トピック</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="mqttsendtopic" name="mqttsendtopic" value="<%= @analyze_app_setting.mqtt_send_topic %>">
+          </div>
+        </div>
+      </fieldset>
+
+      <hr>
+
+      <fieldset>
+        <legend class="h5">計測・トリガ設定</legend>
+        <div class="row mb-3">
+          <label for="measurementintervalsec" class="col-sm-3 col-form-label">計測間隔 (sec)</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="measurementintervalsec" name="measurementintervalsec" value="<%= @analyze_app_setting.measurement_interval_sec %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="measurementsec" class="col-sm-3 col-form-label">計測秒数 (sec)</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="measurementsec" name="measurementsec" value="<%= @analyze_app_setting.measurement_sec %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="pretriggersec" class="col-sm-3 col-form-label">プレトリガ秒数 (sec)</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="pretriggersec" name="pretriggersec" value="<%= @analyze_app_setting.pretrigger_sec %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="triggerinputdeviceid" class="col-sm-3 col-form-label">トリガ入力デバイスID</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="triggerinputdeviceid" name="triggerinputdeviceid" value="<%= @analyze_app_setting.trigger_device_id %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="triggerinputchannelid" class="col-sm-3 col-form-label">トリガ入力チャンネル番号</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="triggerinputchannelid" name="triggerinputchannelid" value="<%= @analyze_app_setting.trigger_channel_id %>">
+          </div>
+        </div>
+      </fieldset>
+
+      <hr>
+
+      <fieldset>
+        <legend class="h5">データ出力設定</legend>
+        <div class="row mb-3">
+          <label for="isoutputdata" class="col-sm-3 col-form-label">データ出力</label>
+          <div class="col-sm-9">
+             <select class="form-select" id="isoutputdata" name="isoutputdata">
+              <option value="1" <%= 'selected' if @analyze_app_setting.is_output_data == 1 %>>有効</option>
+              <option value="0" <%= 'selected' if @analyze_app_setting.is_output_data == 0 %>>無効</option>
+            </select>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="maxoutputfileno" class="col-sm-3 col-form-label">最大出力ファイル数</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="maxoutputfileno" name="maxoutputfileno" value="<%= @analyze_app_setting.max_output_file_no %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="outputdatasec" class="col-sm-3 col-form-label">波形データ出力秒数 (sec)</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="outputdatasec" name="outputdatasec" value="<%= @analyze_app_setting.output_data_sec %>">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="outputdatapath" class="col-sm-3 col-form-label">書き出しデータパス</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="outputdatapath" name="outputdatapath" value="<%= @analyze_app_setting.output_data_path %>">
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> 設定を保存</button>
+      </div>
+    </form>
+  </div>
+</div>

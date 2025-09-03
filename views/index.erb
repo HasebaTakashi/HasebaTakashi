@@ -1,0 +1,63 @@
+<div class="container">
+  <div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">システム設定メニュー</h1>
+    <div class="col-lg-6 mx-auto">
+      <p class="lead mb-4">デバイス名: <span class="fw-bold"><%= @device_name %></span></p>
+      <p class="mb-4">各項目を選択して設定を編集してください。</p>
+    </div>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">サンプリングアプリ設定</h5>
+          <p class="card-text">サンプリングサーバーのIP、ポート、バッファサイズなどを設定します。</p>
+          <a href="/samplingappsetting" class="btn btn-primary">設定ページへ</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">デバイス設定</h5>
+          <p class="card-text">接続されているデバイスの有効/無効を切り替えます。</p>
+          <a href="/devicesetting" class="btn btn-primary">設定ページへ</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">チャンネル設定</h5>
+          <p class="card-text">各チャンネルのサンプリング周波数、ゲイン、レンジなどを設定します。</p>
+          <a href="/channelsetting" class="btn btn-primary">設定ページへ</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">分析アプリ設定</h5>
+          <p class="card-text">分析アプリケーションの動作、MQTT、データ出力などを設定します。</p>
+          <a href="/analyzeappsetting" class="btn btn-primary">設定ページへ</a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">分析設定</h5>
+          <p class="card-text">個別の分析タスクの名前、タイプ、コマンドなどを設定します。</p>
+          <a href="/analyzesetting" class="btn btn-primary">設定ページへ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-5">
+     <a href="/reboot" class="btn btn-danger btn-lg px-4 gap-3" onclick="return confirm('システムを本当に再起動しますか？');">
+       <i class="bi bi-power"></i> システム再起動
+     </a>
+  </div>
+</div>

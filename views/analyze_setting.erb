@@ -1,0 +1,55 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3><i class="bi bi-clipboard-data"></i> 分析設定</h3>
+    <a href="/addanalyze" class="btn btn-success"><i class="bi bi-plus-circle"></i> 新しい分析を追加</a>
+  </div>
+  <div class="card-body">
+    <p class="card-text">個別の分析タスクを編集、追加、削除します。</p>
+    <form action="/editanalyze" method="post">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>有効</th>
+              <th>分析名</th>
+              <th>データチャンネルID</th>
+              <th>分析タイプ</th>
+              <th>分析パス</th>
+              <th>分析コマンド</th>
+              <th>分析引数</th>
+              <th class="text-center">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @analyze_settings.each do |setting| %>
+              <tr>
+                <th scope="row"><%= setting.analyze_id %></th>
+                <td class="text-center">
+                  <div class="form-check form-switch d-inline-block">
+                    <input type="hidden" name="analyzeenable<%= setting.analyze_id %>" value="0">
+                    <input class="form-check-input" type="checkbox" role="switch" name="analyzeenable<%= setting.analyze_id %>" value="1" <%= 'checked' if setting.enable_analyze == 1 %>>
+                  </div>
+                </td>
+                <td><input type="text" class="form-control" name="analyzename<%= setting.analyze_id %>" value="<%= setting.analyze_name %>"></td>
+                <td><input type="number" class="form-control" name="datachannelid<%= setting.analyze_id %>" value="<%= setting.data_channel_id %>"></td>
+                <td><input type="number" class="form-control" name="analyzetype<%= setting.analyze_id %>" value="<%= setting.analyze_type %>"></td>
+                <td><input type="text" class="form-control" name="analyzepath<%= setting.analyze_id %>" value="<%= setting.analyze_path %>"></td>
+                <td><input type="text" class="form-control" name="analyzecommand<%= setting.analyze_id %>" value="<%= setting.analyze_command %>"></td>
+                <td><input type="text" class="form-control" name="analyzerarguments<%= setting.analyze_id %>" value="<%= setting.analyze_arguments %>"></td>
+                <td class="text-center">
+                  <a href="/deleteanalyzer/<%= setting.analyze_id %>" class="btn btn-sm btn-danger" onclick="return confirm('分析 ID:<%= setting.analyze_id %> を本当に削除しますか？');">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> すべての設定を保存</button>
+      </div>
+    </form>
+  </div>
+</div>

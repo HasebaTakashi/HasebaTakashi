@@ -1,0 +1,17 @@
+{
+  "SamplingServerIP": "127.0.0.1",
+  "SamplingServerPort": 8080,
+  "MQTTHostIP": "192.168.1.10",
+  "MQTTPort": 1883,
+  "MQTTSendTopic": "sensor/data",
+  "MeasurementSec": 60,
+  "MeasurementIntervalSec": 10,
+  "OutputData": 1,
+  "MaxOutputFileNo": 100,
+  "OutputDataSec": 30,
+  "TriggerType": 0,
+  "PreTriggerSec": 5,
+  "TriggerInputDeviceID": 1,
+  "TriggerInputChannelNo": 1,
+  "OutputDataPath": "/var/data/output"
+}

@@ -1,0 +1,14 @@
+{
+  "Device1": {
+    "DeviceID": 1,
+    "DeviceName": "Device-1",
+    "ChannelNo": 4,
+    "EnableDevice": 1
+  },
+  "Device2": {
+    "DeviceID": 2,
+    "DeviceName": "Device-2",
+    "ChannelNo": 2,
+    "EnableDevice": 0
+  }
+}

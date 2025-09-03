@@ -1,0 +1,22 @@
+{
+  "Analyze1": {
+    "AnalyzeID": 1,
+    "AnalyzeName": "FFT Analysis",
+    "DataChannelID": 1,
+    "AnalyzeType": 1,
+    "AnalyzePath": "/usr/bin/fft_analyzer",
+    "AnalyzeCommand": "fft_analyzer",
+    "AnalyzeArguments": "-f 1024",
+    "EnableAnalyze": 1
+  },
+  "Analyze2": {
+    "AnalyzeID": 2,
+    "AnalyzeName": "Vibration Analysis",
+    "DataChannelID": 2,
+    "AnalyzeType": 2,
+    "AnalyzePath": "/usr/bin/vibration_analyzer",
+    "AnalyzeCommand": "vibration_analyzer",
+    "AnalyzeArguments": "--level=3",
+    "EnableAnalyze": 1
+  }
+}

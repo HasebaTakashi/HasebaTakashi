@@ -1,0 +1,50 @@
+<div class="card">
+  <div class="card-header">
+    <h3><i class="bi bi-gear-wide-connected"></i> サンプリングアプリ設定</h3>
+  </div>
+  <div class="card-body">
+    <form action="/editsamplingapp" method="post">
+      <div class="row mb-3">
+        <label for="serverip" class="col-sm-3 col-form-label">サーバーIPアドレス</label>
+        <div class="col-sm-9">
+          <input type="text" class="form-control" id="serverip" name="serverip" value="<%= @sampling_app_setting.server_ip %>">
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label for="serverport" class="col-sm-3 col-form-label">サーバーポート番号</label>
+        <div class="col-sm-9">
+          <input type="number" class="form-control" id="serverport" name="serverport" value="<%= @sampling_app_setting.server_port %>">
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label for="servertype" class="col-sm-3 col-form-label">サーバータイプ</label>
+        <div class="col-sm-9">
+          <select class="form-select" id="servertype" name="servertype">
+            <option value="1" <%= 'selected' if @sampling_app_setting.server_type == 1 %>>Socket</option>
+            <option value="2" <%= 'selected' if @sampling_app_setting.server_type == 2 %>>druby</option>
+          </select>
+        </div>
+      </div>
+      <hr>
+      <div class="row mb-3">
+        <label for="bufferno" class="col-sm-3 col-form-label">バッファ数</label>
+        <div class="col-sm-9">
+          <input type="number" class="form-control" id="bufferno" name="bufferno" value="<%= @sampling_app_setting.buffer_no %>">
+        </div>
+      </div>
+
+      <% @sampling_app_setting.buffer_no.times do |i| %>
+        <div class="row mb-3">
+          <label for="buffer<%= i + 1 %>size" class="col-sm-3 col-form-label">バッファ <%= i + 1 %> サイズ</label>
+          <div class="col-sm-9">
+            <input type="number" class="form-control" id="buffer<%= i + 1 %>size" name="buffer<%= i + 1 %>size" value="<%= @sampling_app_setting.buffer_size(i + 1) %>">
+          </div>
+        </div>
+      <% end %>
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> 設定を保存</button>
+      </div>
+    </form>
+  </div>
+</div>

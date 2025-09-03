@@ -1,0 +1,25 @@
+Puma starting in single mode...
+* Puma version: 6.6.1 ("Return to Forever")
+* Ruby version: ruby 3.2.3 (2024-01-18 revision 52bb2ac0a6) [x86_64-linux-gnu]
+*  Min threads: 0
+*  Max threads: 5
+*  Environment: development
+*          PID: 8515
+{"BufferNo"=>2, "Buffer1Size"=>30, "Buffer2Size"=>60, "ServerType"=>1, "ServerIP"=>"127.0.0.1", "ServerPort"=>8080}
+"BufferSizeHash:{1=>30, 2=>60}"
+1
+"127.0.0.1"
+8080
+["Device1", {"DeviceID"=>1, "DeviceName"=>"Device-1", "ChannelNo"=>4, "EnableDevice"=>1}]
+["Device2", {"DeviceID"=>2, "DeviceName"=>"Device-2", "ChannelNo"=>2, "EnableDevice"=>0}]
+["Channel1", {"ChannelID"=>1, "ChannelName"=>"CH1-Temp", "DeviceID"=>1, "ChannelIndex"=>0, "SamplingFrequency"=>1000, "Gain"=>1.0, "MaxRange"=>10.0, "MinRange"=>-10.0, "Resolution"=>16, "InputType"=>1}]
+#<ChannelSetting:0x00007f834f336920 @channel_id=1, @channel_name="CH1-Temp", @device_id=1, @ch_index=0, @sampling_freq=1000, @gain=1.0, @max_range=10.0, @min_range=-10.0, @resolution=16, @input_type=1>
+["Channel2", {"ChannelID"=>2, "ChannelName"=>"CH2-Volt", "DeviceID"=>1, "ChannelIndex"=>1, "SamplingFrequency"=>500, "Gain"=>2.5, "MaxRange"=>5.0, "MinRange"=>-5.0, "Resolution"=>16, "InputType"=>2}]
+#<ChannelSetting:0x00007f834f336560 @channel_id=2, @channel_name="CH2-Volt", @device_id=1, @ch_index=1, @sampling_freq=500, @gain=2.5, @max_range=5.0, @min_range=-5.0, @resolution=16, @input_type=2>
+{"Analyze1"=>{"AnalyzeID"=>1, "AnalyzeName"=>"FFT Analysis", "DataChannelID"=>1, "AnalyzeType"=>1, "AnalyzePath"=>"/usr/bin/fft_analyzer", "AnalyzeCommand"=>"fft_analyzer", "AnalyzeArguments"=>"-f 1024", "EnableAnalyze"=>1}, "Analyze2"=>{"AnalyzeID"=>2, "AnalyzeName"=>"Vibration Analysis", "DataChannelID"=>2, "AnalyzeType"=>2, "AnalyzePath"=>"/usr/bin/vibration_analyzer", "AnalyzeCommand"=>"vibration_analyzer", "AnalyzeArguments"=>"--level=3", "EnableAnalyze"=>1}}
+Analyze1
+{"AnalyzeID"=>1, "AnalyzeName"=>"FFT Analysis", "DataChannelID"=>1, "AnalyzeType"=>1, "AnalyzePath"=>"/usr/bin/fft_analyzer", "AnalyzeCommand"=>"fft_analyzer", "AnalyzeArguments"=>"-f 1024", "EnableAnalyze"=>1}
+Analyze2
+{"AnalyzeID"=>2, "AnalyzeName"=>"Vibration Analysis", "DataChannelID"=>2, "AnalyzeType"=>2, "AnalyzePath"=>"/usr/bin/vibration_analyzer", "AnalyzeCommand"=>"vibration_analyzer", "AnalyzeArguments"=>"--level=3", "EnableAnalyze"=>1}
+* Listening on http://0.0.0.0:39000
+Use Ctrl-C to stop

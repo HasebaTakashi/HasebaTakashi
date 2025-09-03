@@ -1,0 +1,26 @@
+{
+  "Channel1": {
+    "ChannelID": 1,
+    "ChannelName": "CH1-Temp",
+    "DeviceID": 1,
+    "ChannelIndex": 0,
+    "SamplingFrequency": 1000,
+    "Gain": 1.0,
+    "MaxRange": 10.0,
+    "MinRange": -10.0,
+    "Resolution": 16,
+    "InputType": 1
+  },
+  "Channel2": {
+    "ChannelID": 2,
+    "ChannelName": "CH2-Volt",
+    "DeviceID": 1,
+    "ChannelIndex": 1,
+    "SamplingFrequency": 500,
+    "Gain": 2.5,
+    "MaxRange": 5.0,
+    "MinRange": -5.0,
+    "Resolution": 16,
+    "InputType": 2
+  }
+}

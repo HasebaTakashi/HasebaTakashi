@@ -1,0 +1,47 @@
+<div class="card">
+  <div class="card-header">
+    <h3><i class="bi bi-broadcast-pin"></i> チャンネル設定</h3>
+  </div>
+  <div class="card-body">
+    <p class="card-text">各チャンネルの詳細設定を編集します。</p>
+    <form action="/editchannel" method="post">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>チャンネル名</th>
+              <th>デバイスID</th>
+              <th>インデックス</th>
+              <th>サンプリング周波数 (Hz)</th>
+              <th>ゲイン</th>
+              <th>最大レンジ</th>
+              <th>最小レンジ</th>
+              <th>解像度 (bit)</th>
+              <th>入力種別</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @channel_settings.each do |setting| %>
+              <tr>
+                <th scope="row"><%= setting.channel_id %></th>
+                <td><input type="text" class="form-control" name="channelname<%= setting.channel_id %>" value="<%= setting.channel_name %>"></td>
+                <td><input type="number" class="form-control" name="channeldeviceid<%= setting.channel_id %>" value="<%= setting.device_id %>"></td>
+                <td><input type="number" class="form-control" name="channelindex<%= setting.channel_id %>" value="<%= setting.ch_index %>"></td>
+                <td><input type="number" class="form-control" name="channelsamplingfrequency<%= setting.channel_id %>" value="<%= setting.sampling_freq %>"></td>
+                <td><input type="text" class="form-control" name="channelgain<%= setting.channel_id %>" value="<%= setting.gain %>"></td>
+                <td><input type="text" class="form-control" name="channelmaxrange<%= setting.channel_id %>" value="<%= setting.max_range %>"></td>
+                <td><input type="text" class="form-control" name="channelminrange<%= setting.channel_id %>" value="<%= setting.min_range %>"></td>
+                <td><input type="number" class="form-control" name="channelresolution<%= setting.channel_id %>" value="<%= setting.resolution %>"></td>
+                <td><input type="number" class="form-control" name="inputtype<%= setting.channel_id %>" value="<%= setting.input_type %>"></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> 設定を保存</button>
+      </div>
+    </form>
+  </div>
+</div>

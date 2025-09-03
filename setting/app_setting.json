@@ -1,0 +1,8 @@
+{
+  "BufferNo": 2,
+  "Buffer1Size": 30,
+  "Buffer2Size": 60,
+  "ServerType": 1,
+  "ServerIP": "127.0.0.1",
+  "ServerPort": 8080
+}

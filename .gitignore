@@ -1,0 +1,5 @@
+# Ignore bundler vendor directory
+vendor/bundle
+
+# Ignore bundler config
+.bundle
