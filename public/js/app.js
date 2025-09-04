@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
     const domElements = {
         status: document.getElementById('status'),
         diagIdSelector: document.getElementById('diag-id-selector'),
+        summaryGrid: document.getElementById('summary-grid'),
+        summaryPrevBtn: document.getElementById('summary-prev-btn'),
+        summaryNextBtn: document.getElementById('summary-next-btn'),
         diagId: document.getElementById('diag-id'),
         mode: document.getElementById('mode'),
         learnedCount: document.getElementById('learned-count'),
@@ -15,51 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
         chartCanvas: document.getElementById('result-chart'),
     };
 
+    // --- State Variables ---
     let dataStore = new Map();
+    let diagIdToNameMap = new Map();
+    let summaryCurrentPage = 0;
+    const summaryItemsPerPage = 4;
     const fieldsPerDataset = 9;
     const maxHistory = 100;
 
-    const saveState = () => {
-        try {
-            sessionStorage.setItem('dataStore', JSON.stringify(Array.from(dataStore.entries())));
-            const selectedId = domElements.diagIdSelector.value;
-            if (selectedId) {
-                sessionStorage.setItem('selectedDiagId', selectedId);
-            }
-        } catch (e) {
-            console.error("Failed to save state to sessionStorage", e);
-        }
-    };
-
-    const loadState = () => {
-        try {
-            const savedStore = sessionStorage.getItem('dataStore');
-            if (savedStore) {
-                dataStore = new Map(JSON.parse(savedStore));
-                domElements.diagIdSelector.innerHTML = '';
-                for (const key of dataStore.keys()) {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = key;
-                    domElements.diagIdSelector.appendChild(option);
-                }
-            }
-
-            const savedId = sessionStorage.getItem('selectedDiagId');
-            if (savedId && dataStore.has(savedId)) {
-                domElements.diagIdSelector.value = savedId;
-            }
-
-            updateDisplay(domElements.diagIdSelector.value);
-        } catch (e) {
-            console.error("Failed to load state from sessionStorage", e);
-            dataStore = new Map(); // Reset on error
-        }
-    };
-
     // --- Chart.js Initialization ---
-    const chartCtx = domElements.chartCanvas.getContext('2d');
-    const resultChart = new Chart(chartCtx, {
+    const resultChart = new Chart(domElements.chartCanvas.getContext('2d'), {
         type: 'line',
         data: {
             labels: Array.from({ length: maxHistory }, (_, i) => i + 1),
@@ -73,19 +42,57 @@ document.addEventListener('DOMContentLoaded', () => {
         options: { scales: { y: { beginAtZero: true } }, animation: { duration: 0 } }
     });
 
+    // --- Functions ---
+    const saveState = () => {
+        try {
+            sessionStorage.setItem('dataStore', JSON.stringify(Array.from(dataStore.entries())));
+            const selectedId = domElements.diagIdSelector.value;
+            if (selectedId) sessionStorage.setItem('selectedDiagId', selectedId);
+            sessionStorage.setItem('summaryCurrentPage', summaryCurrentPage);
+        } catch (e) { console.error("Failed to save state", e); }
+    };
+
+    const renderSummaryGrid = () => {
+        domElements.summaryGrid.innerHTML = '';
+        const allIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
+        const startIndex = summaryCurrentPage * summaryItemsPerPage;
+        const endIndex = startIndex + summaryItemsPerPage;
+        const idsToShow = allIds.slice(startIndex, endIndex);
+
+        for (const id of idsToShow) {
+            const stored = dataStore.get(id);
+            if (!stored || !stored.latestData) continue;
+            const data = stored.latestData;
+            const name = diagIdToNameMap.get(id) || `ID: ${id}`;
+            const level = data[4];
+            const result = parseFloat(data[5]).toFixed(4);
+
+            const cardHTML = `
+                <div class="summary-card" data-id="${id}" style="cursor: pointer;">
+                    <div class="summary-card-header">
+                        <span class="summary-card-id">${id}</span>
+                        <span class="lamp level-${level}"></span>
+                    </div>
+                    <div class="summary-card-name">${name}</div>
+                    <div class="summary-card-result">${result}</div>
+                </div>`;
+            domElements.summaryGrid.insertAdjacentHTML('beforeend', cardHTML);
+        }
+        domElements.summaryPrevBtn.disabled = summaryCurrentPage === 0;
+        domElements.summaryNextBtn.disabled = endIndex >= allIds.length;
+    };
+
     const updateDisplay = (diagId) => {
         const stored = dataStore.get(diagId);
-        if (!stored) return;
+        if (!stored || !stored.latestData) return;
         const data = stored.latestData;
         domElements.diagId.textContent = data[0];
         domElements.mode.textContent = data[1] === '1' ? `学習 (${data[1]})` : `診断 (${data[1]})`;
         domElements.learnedCount.textContent = data[2];
         domElements.targetCount.textContent = data[3];
-
         const levelNum = data[4];
         domElements.diagLevelLamp.className = `lamp level-${levelNum}`;
         domElements.diagLevelText.textContent = `レベル ${levelNum}`;
-
         domElements.result.textContent = parseFloat(data[5]).toFixed(6);
         domElements.threshold1.textContent = data[6];
         domElements.threshold2.textContent = data[7];
@@ -118,36 +125,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Initial Load from Storage ---
-    loadState();
+    const init = async () => {
+        // Load state from session storage
+        try {
+            const savedStore = sessionStorage.getItem('dataStore');
+            if (savedStore) dataStore = new Map(JSON.parse(savedStore));
+            summaryCurrentPage = parseInt(sessionStorage.getItem('summaryCurrentPage') || '0', 10);
+        } catch (e) { console.error("Failed to load state", e); dataStore = new Map(); }
 
-    // --- WebSocket Connection ---
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.host}/socket`;
-    const ws = new WebSocket(wsUrl);
+        // Fetch settings for names
+        try {
+            const response = await fetch('/api/settings');
+            if (response.ok) {
+                const settings = await response.json();
+                for (const key in settings) {
+                    diagIdToNameMap.set(settings[key].DetectID.toString(), settings[key].DetectName);
+                }
+            }
+        } catch (e) { console.error("Failed to fetch settings", e); }
 
-    ws.onopen = () => domElements.status.textContent = 'Connected';
-
-    ws.onmessage = (event) => {
-        const allValues = event.data.split(',');
-        if (allValues.length === 0 || allValues[0] === '' || allValues.length % fieldsPerDataset !== 0) {
-            console.error('Invalid data format received:', event.data);
-            return;
+        // Initial UI Render
+        domElements.diagIdSelector.innerHTML = '';
+        const sortedIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
+        for (const key of sortedIds) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = key;
+            domElements.diagIdSelector.appendChild(option);
         }
-        const numDatasets = allValues.length / fieldsPerDataset;
-        for (let i = 0; i < numDatasets; i++) {
-            const dataset = allValues.slice(i * fieldsPerDataset, (i + 1) * fieldsPerDataset);
-            processDataset(dataset);
-        }
+        const savedId = sessionStorage.getItem('selectedDiagId');
+        if (savedId && dataStore.has(savedId)) domElements.diagIdSelector.value = savedId;
+
+        renderSummaryGrid();
         updateDisplay(domElements.diagIdSelector.value);
-        saveState();
+
+        // --- Event Listeners & WebSocket ---
+        domElements.summaryPrevBtn.addEventListener('click', () => {
+            if (summaryCurrentPage > 0) {
+                summaryCurrentPage--;
+                renderSummaryGrid();
+                saveState();
+            }
+        });
+        domElements.summaryNextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(dataStore.size / summaryItemsPerPage);
+            if (summaryCurrentPage < totalPages - 1) {
+                summaryCurrentPage++;
+                renderSummaryGrid();
+                saveState();
+            }
+        });
+        domElements.diagIdSelector.addEventListener('change', (event) => {
+            updateDisplay(event.target.value);
+            saveState();
+        });
+
+        domElements.summaryGrid.addEventListener('click', (event) => {
+            const card = event.target.closest('.summary-card');
+            if (card && card.dataset.id) {
+                const clickedId = card.dataset.id;
+                domElements.diagIdSelector.value = clickedId;
+                updateDisplay(clickedId);
+                saveState();
+            }
+        });
+
+        const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/socket`);
+        ws.onopen = () => domElements.status.textContent = 'Connected';
+        ws.onclose = () => domElements.status.textContent = 'Disconnected';
+        ws.onerror = () => domElements.status.textContent = 'Connection Error';
+        ws.onmessage = (event) => {
+            const allValues = event.data.split(',');
+            if (allValues.length === 0 || allValues[0] === '' || allValues.length % fieldsPerDataset !== 0) return;
+            const numDatasets = allValues.length / fieldsPerDataset;
+            for (let i = 0; i < numDatasets; i++) {
+                processDataset(allValues.slice(i * fieldsPerDataset, (i + 1) * fieldsPerDataset));
+            }
+            renderSummaryGrid();
+            updateDisplay(domElements.diagIdSelector.value);
+            saveState();
+        };
     };
 
-    domElements.diagIdSelector.addEventListener('change', (event) => {
-        updateDisplay(event.target.value);
-        saveState();
-    });
-
-    ws.onclose = () => domElements.status.textContent = 'Disconnected';
-    ws.onerror = () => domElements.status.textContent = 'Connection Error';
+    init();
 });
