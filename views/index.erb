@@ -77,6 +77,20 @@
         .lamp.level-2 { background-color: #fd7e14; box-shadow: 0 0 10px #fd7e14; }
         .lamp.level-3 { background-color: #dc3545; box-shadow: 0 0 10px #dc3545; }
         .chart-container { margin-top: 2em; background-color: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .editable-card:hover { background-color: #e9f5ff; cursor: pointer; }
+        .toggle-mode-card:hover { background-color: #f8f9fa; cursor: pointer; }
+        .summary-card-name:hover { text-decoration: underline; color: #0056b3; }
+        .info-card .edit-container { display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .info-card .edit-container input { width: 40%; text-align: center; border: 1px solid #007bff; font-size: 1em; padding: 2px; }
+        .edit-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+        .edit-btn.save { color: #28a745; font-size: 1.2em; }
+        .edit-btn.cancel { color: #dc3545; font-size: 1.2em; }
     </style>
     <script src="/js/chart.min.js"></script>
 </head>
@@ -109,7 +123,7 @@
                 <div class="label">診断ID</div>
                 <div id="diag-id" class="value">N/A</div>
             </div>
-            <div class="info-card">
+            <div class="info-card toggle-mode-card">
                 <div class="label">モード</div>
                 <div id="mode" class="value">N/A</div>
             </div>
@@ -132,15 +146,15 @@
                 <div class="label">設定した学習データ数</div>
                 <div id="target-count" class="value">N/A</div>
             </div>
-            <div class="info-card">
+            <div class="info-card editable-card" data-property="Threshold1">
                 <div class="label">レベル1しきい値</div>
                 <div id="threshold-1" class="value">N/A</div>
             </div>
-            <div class="info-card">
+            <div class="info-card editable-card" data-property="Threshold2">
                 <div class="label">レベル2しきい値</div>
                 <div id="threshold-2" class="value">N/A</div>
             </div>
-            <div class="info-card">
+            <div class="info-card editable-card" data-property="Threshold3">
                 <div class="label">レベル3しきい値</div>
                 <div id="threshold-3" class="value">N/A</div>
             </div>

@@ -13,12 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const createSettingCard = (key, settingData = {}) => {
         const card = document.createElement('div');
         card.className = 'setting-card';
-        card.dataset.key = key;
+        // Use the DetectID for the dataset key to ensure consistency
+        card.dataset.id = settingData.DetectID || key;
 
-        let formContent = `<h3>${key}</h3><div class="form-grid">`;
+        let formContent = `<h3>${settingData.DetectName || key}</h3><div class="form-grid">`;
         settingKeys.forEach(prop => {
             const value = settingData[prop] !== undefined ? settingData[prop] : '';
-            const inputType = (typeof value === 'number') ? 'number' : 'text';
+            const inputType = (prop === 'DetectName') ? 'text' : 'number';
             const step = (prop.includes('Threshold') || prop.includes('Coefficient')) ? 'any' : '1';
 
             formContent += `
@@ -33,18 +34,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     };
 
-    const loadSettings = async () => {
+    const loadSettingsFromStorage = () => {
         try {
-            const response = await fetch('/api/settings');
-            if (!response.ok) throw new Error('Failed to fetch settings');
-            const settings = await response.json();
-            formContainer.innerHTML = '';
-            for (const key in settings) {
-                const card = createSettingCard(key, settings[key]);
-                formContainer.appendChild(card);
+            const savedStore = sessionStorage.getItem('dataStore');
+            if (savedStore) {
+                const dataStore = new Map(JSON.parse(savedStore));
+                formContainer.innerHTML = '';
+                const sortedIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
+                for (const id of sortedIds) {
+                    const data = dataStore.get(id);
+                    if (data && data.settings) {
+                        const card = createSettingCard(data.settings.DetectName, data.settings);
+                        formContainer.appendChild(card);
+                    }
+                }
+            } else {
+                showNotification('メインページでデータを一度受信してから、このページを開いてください。', 'error');
             }
         } catch (error) {
-            showNotification(error.message, 'error');
+            showNotification('設定の読み込みに失敗しました: ' + error.message, 'error');
         }
     };
 
@@ -58,9 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     addBtn.addEventListener('click', () => {
-        const newKey = `Detect${formContainer.children.length + 1}`;
+        const nextId = formContainer.children.length > 0
+            ? Math.max(...Array.from(formContainer.children).map(c => parseInt(c.dataset.id, 10))) + 1
+            : 1;
+
+        const newKey = `Detect${nextId}`;
         const defaultData = {
-            "DetectID": formContainer.children.length + 1, "DetectName": newKey, "AnalyzeID": 1, "OperationMode": 0,
+            "DetectID": nextId, "DetectName": newKey, "AnalyzeID": 1, "OperationMode": 0,
             "LearningNo": 20, "MoveAveNo": 1, "Coefficient1": 1.5, "Coefficient2": 3.0, "Coefficient3": 6.0,
             "Threshold1": 0, "Threshold2": 0, "Threshold3": 0, "Enable": 1
         };
@@ -73,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const cards = formContainer.querySelectorAll('.setting-card');
 
         cards.forEach(card => {
-            const key = card.dataset.key;
             const setting = {};
             const inputs = card.querySelectorAll('input');
             inputs.forEach(input => {
@@ -81,14 +92,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const value = input.type === 'number' ? parseFloat(input.value) : input.value;
                 setting[prop] = isNaN(value) ? input.value : value;
             });
+            // Use DetectName as the key for the JSON object
+            const key = setting.DetectName || `Detect${setting.DetectID}`;
             settingsToSave[key] = setting;
         });
 
         try {
-            const response = await fetch('/api/settings', {
+            const response = await fetch('/api/publish_settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settingsToSave, null, 2)
+                body: JSON.stringify(settingsToSave)
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Failed to save settings');
@@ -98,6 +111,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initial load
-    loadSettings();
+    loadSettingsFromStorage();
 });
