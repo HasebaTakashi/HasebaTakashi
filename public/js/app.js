@@ -29,7 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const realtimeFieldNames = ["DetectID", "OperationMode", "CurrentLearningNo", "DetectLevel", "CalculationResult"];
 
     // --- Chart.js Initialization ---
-    const resultChart = new Chart(domElements.chartCanvas.getContext('2d'), { type: 'line', data: { labels: Array.from({ length: maxHistory }, (_, i) => i + 1), datasets: [ { label: '計算結果', data: [], borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 2, fill: false, tension: 0.1 }, { label: 'レベル1しきい値', data: [], borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 }, { label: 'レベル2しきい値', data: [], borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 }, { label: 'レベル3しきい値', data: [], borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 }, ]}, options: { scales: { y: { beginAtZero: true } }, animation: { duration: 0 } } });
+    const resultChart = new Chart(domElements.chartCanvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: maxHistory }, (_, i) => i + 1),
+            datasets: [
+                { label: '計算結果', data: [], borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 2, fill: false, tension: 0.1 },
+                { label: 'レベル1しきい値', data: [], borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
+                { label: 'レベル2しきい値', data: [], borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
+                { label: 'レベル3しきい値', data: [], borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
+            ],
+        },
+        options: { scales: { y: { beginAtZero: true } }, animation: { duration: 0 } }
+    });
 
     // --- Main Functions ---
     const saveState = () => {
@@ -51,10 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const stored = dataStore.get(id);
             if (!stored || !stored.settings) continue;
             const s = stored.settings;
-            const resultText = (s.CalculationResult !== undefined && s.CalculationResult !== null)
-                ? s.CalculationResult.toFixed(4)
-                : 'N/A';
-            const cardHTML = `<div class="summary-card" data-id="${s.DetectID}"><div class="summary-card-header"><span class="summary-card-id">${s.DetectID}</span><span class="lamp level-${s.DetectLevel}"></span></div><div class="summary-card-name editable-name">${s.DetectName}</div><div class="summary-card-result">${resultText}</div></div>`;
+            const resultText = (s.CalculationResult !== undefined && s.CalculationResult !== null) ? s.CalculationResult.toFixed(4) : 'N/A';
+            const level = s.DetectLevel ?? 0;
+            const cardHTML = `<div class="summary-card" data-id="${s.DetectID}"><div class="summary-card-header"><span class="summary-card-id">${s.DetectID}</span><span class="lamp level-${level}"></span></div><div class="summary-card-name">${s.DetectName}</div><div class="summary-card-result">${resultText}</div></div>`;
             domElements.summaryGrid.insertAdjacentHTML('beforeend', cardHTML);
         }
         domElements.summaryPrevBtn.disabled = summaryCurrentPage === 0;
@@ -77,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.threshold2.textContent = s.Threshold2 ?? 'N/A';
         domElements.threshold3.textContent = s.Threshold3 ?? 'N/A';
         resultChart.data.datasets[0].data = stored.resultsHistory;
-        const fill = (v) => Array(maxHistory).fill(v);
+        const fill = (v) => v !== undefined ? Array(maxHistory).fill(v) : [];
         resultChart.data.datasets[1].data = fill(s.Threshold1);
         resultChart.data.datasets[2].data = fill(s.Threshold2);
         resultChart.data.datasets[3].data = fill(s.Threshold3);
@@ -92,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const settings = {};
             settingFieldNames.forEach((name, j) => {
                 const val = settingsArray[j];
-                settings[name] = (name === "DetectName") ? val : parseFloat(val) || 0;
+                settings[name] = (name === "DetectName") ? val : parseFloat(val);
             });
             const diagId = settings.DetectID.toString();
             if (!dataStore.has(diagId)) dataStore.set(diagId, { settings: null, resultsHistory: [] });
@@ -106,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < numDatasets; i++) {
             const realtimeArray = allValues.slice(i * realtimeFieldNames.length, (i + 1) * realtimeFieldNames.length);
             const realtimeData = {};
-            realtimeFieldNames.forEach((name, j) => { realtimeData[name] = parseFloat(realtimeArray[j]) || 0; });
+            realtimeFieldNames.forEach((name, j) => { realtimeData[name] = parseFloat(realtimeArray[j]); });
             const diagId = realtimeData.DetectID.toString();
             const stored = dataStore.get(diagId);
             if (stored && stored.settings) {
@@ -130,17 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/api/publish_settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settingsToSave) });
             if (!res.ok) throw new Error('Failed to publish settings');
+            // After successfully publishing, request the new canonical state
+            fetch('/api/request_settings', { method: 'POST' });
         } catch (e) { console.error("Failed to publish settings", e); }
     };
 
     const init = () => {
-        // Load state from session storage
+        // Load state, set up listeners, and connect WebSocket
         try {
             const savedStore = sessionStorage.getItem('dataStore');
             if (savedStore) dataStore = new Map(JSON.parse(savedStore));
             summaryCurrentPage = parseInt(sessionStorage.getItem('summaryCurrentPage') || '0', 10);
         } catch (e) { dataStore = new Map(); }
 
+        // Initial UI Render from potentially stale state
         const sortedIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
         domElements.diagIdSelector.innerHTML = '';
         sortedIds.forEach(key => {
@@ -154,11 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderSummaryGrid();
         updateDisplay(domElements.diagIdSelector.value);
-
-        // --- Event Listeners ---
         addEventListeners();
 
-        // --- WebSocket Connection ---
         const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/socket`);
         ws.onopen = () => { domElements.status.textContent = 'Connected'; fetch('/api/request_settings', { method: 'POST' }); };
         ws.onclose = () => domElements.status.textContent = 'Disconnected';
@@ -190,27 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.summaryPrevBtn.addEventListener('click', () => { if (summaryCurrentPage > 0) { summaryCurrentPage--; renderSummaryGrid(); saveState(); } });
         domElements.summaryNextBtn.addEventListener('click', () => { const totalPages = Math.ceil(dataStore.size / summaryItemsPerPage); if (summaryCurrentPage < totalPages - 1) { summaryCurrentPage++; renderSummaryGrid(); saveState(); } });
         domElements.diagIdSelector.addEventListener('change', (event) => { updateDisplay(event.target.value); saveState(); });
-
         domElements.summaryGrid.addEventListener('click', (event) => {
             const card = event.target.closest('.summary-card');
-            if (!card) return;
-
-            const diagId = card.dataset.id;
-            const nameEl = event.target.closest('.editable-name');
-
-            if (nameEl) {
-                // Click was on the name, start editing
-                enterNameEditMode(nameEl, diagId);
-            } else {
-                // Click was on the card but not the name, switch the view
-                if (diagId) {
-                    domElements.diagIdSelector.value = diagId;
-                    updateDisplay(diagId);
-                    saveState();
-                }
+            if (card && card.dataset.id) {
+                domElements.diagIdSelector.value = card.dataset.id;
+                updateDisplay(card.dataset.id);
+                saveState();
             }
         });
-
         domElements.dataDisplay.addEventListener('click', (event) => {
             const card = event.target.closest('.info-card');
             if (!card) return;
@@ -219,44 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (card.classList.contains('editable-card')) {
                 if (card.querySelector('.edit-container')) return;
                 const valueEl = card.querySelector('.value');
-                const propertyToEdit = card.dataset.property;
-                enterThresholdEditMode(card, valueEl, propertyToEdit);
+                enterThresholdEditMode(card, valueEl);
             }
         });
     };
 
-    const enterNameEditMode = (nameEl, diagId) => {
-        const originalValue = nameEl.textContent;
-        nameEl.style.display = 'none';
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = originalValue;
-        nameEl.parentNode.insertBefore(input, nameEl.nextSibling);
-        input.focus();
-        const exit = (save) => {
-            nameEl.parentNode.removeChild(input);
-            nameEl.style.display = 'block';
-            if (save) {
-                const newValue = input.value.trim();
-                if (newValue && newValue !== originalValue) {
-                    const stored = dataStore.get(diagId);
-                    if (stored) {
-                        stored.settings.DetectName = newValue;
-                        saveSettingsToMqtt();
-                        renderSummaryGrid();
-                        saveState();
-                    }
-                }
-            }
-        };
-        input.addEventListener('blur', () => exit(false));
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); exit(true); }
-            else if (e.key === 'Escape') { exit(false); }
-        });
-    };
-
-    const enterThresholdEditMode = (card, valueEl, propertyToEdit) => {
+    const enterThresholdEditMode = (card, valueEl) => {
+        const propertyToEdit = card.dataset.property;
         const originalValue = valueEl.textContent;
         valueEl.style.display = 'none';
         const editContainer = document.createElement('div');
