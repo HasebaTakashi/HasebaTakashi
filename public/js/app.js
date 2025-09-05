@@ -96,7 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processSettingsData = (csvString) => {
+        const newStore = new Map();
         const allValues = csvString.split(',');
+        if (allValues.length < settingFieldNames.length) return;
+
         const numDatasets = allValues.length / settingFieldNames.length;
         for (let i = 0; i < numDatasets; i++) {
             const settingsArray = allValues.slice(i * settingFieldNames.length, (i + 1) * settingFieldNames.length);
@@ -106,9 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings[name] = (name === "DetectName") ? val : parseFloat(val);
             });
             const diagId = settings.DetectID.toString();
-            if (!dataStore.has(diagId)) dataStore.set(diagId, { settings: null, resultsHistory: [] });
-            dataStore.get(diagId).settings = settings;
+            const existingEntry = dataStore.get(diagId) || { resultsHistory: [] };
+            newStore.set(diagId, {
+                settings: settings,
+                resultsHistory: existingEntry.resultsHistory
+            });
         }
+        dataStore = newStore; // Replace the old store with the new one
     };
 
     const processRealtimeData = (csvString) => {
