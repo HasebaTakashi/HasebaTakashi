@@ -1,12 +1,14 @@
 #ifndef SAMPLING_CHANNEL_H
 #define SAMPLING_CHANNEL_H
 
+#include "device_types.h"
+
 // RubyのSamplingChannelクラスに対応する構造体
 // 各チャンネルの設定情報を保持します。
 typedef struct {
     int id;                 // チャンネルID
     char name[64];          // チャンネル名 (最大64文字と仮定)
-    int device_id;          // 属するデバイスのID
+    DeviceType device_id;   // 属するデバイスのID
     int ch_index;           // デバイス内でのチャンネルインデックス
     int sampling_no;        // サンプリング周波数 (1秒間のデータ数)
     double gain;            // ゲイン

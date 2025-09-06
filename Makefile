@@ -15,7 +15,7 @@ LDFLAGS = -L. -lvmonitor2 -pthread -lrt
 TARGET = vmonitor_c_app
 
 # ソースファイル一覧
-SRCS = main.c sampling_data.c sampling_queue.c vmonitor2_board.c sampling_manager.c
+SRCS = main.c sampling_data.c sampling_queue.c vmonitor2_board.c sampling_device.c sampling_manager.c
 
 # オブジェクトファイル一覧 (ソースファイル名から自動生成)
 OBJS = $(SRCS:.c=.o)

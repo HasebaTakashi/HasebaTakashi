@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-SamplingData* sampling_data_create(SamplingChannel* channels, int num_channels) {
+SamplingData* sampling_data_create(SamplingChannel** channels, int num_channels) {
     if (!channels || num_channels <= 0) {
         return NULL;
     }
@@ -27,13 +27,14 @@ SamplingData* sampling_data_create(SamplingChannel* channels, int num_channels) 
     }
 
     for (int i = 0; i < num_channels; ++i) {
-        data->data_per_channel[i].channel_id = channels[i].id;
-        data->data_per_channel[i].ch_index = channels[i].ch_index;
-        data->data_per_channel[i].sampling_no = channels[i].sampling_no;
+        SamplingChannel* ch = channels[i];
+        data->data_per_channel[i].channel_id = ch->id;
+        data->data_per_channel[i].ch_index = ch->ch_index;
+        data->data_per_channel[i].sampling_no = ch->sampling_no;
 
         // ch_index を使ってADチャンネルかパルスチャンネルかを判断
-        if (channels[i].ch_index < VMONITOR2_CH_NO) { // AD Channel
-            size_t buffer_size = sizeof(short) * channels[i].sampling_no;
+        if (ch->ch_index < VMONITOR2_CH_NO) { // AD Channel
+            size_t buffer_size = sizeof(short) * ch->sampling_no;
             data->data_per_channel[i].buffer.ad = (short*)malloc(buffer_size);
             if (!data->data_per_channel[i].buffer.ad) {
                 perror("Failed to allocate ad buffer");
@@ -49,9 +50,9 @@ SamplingData* sampling_data_create(SamplingChannel* channels, int num_channels) 
                 free(data);
                 return NULL;
             }
-            memcpy(data->data_per_channel[i].buffer.ad, channels[i].buffer.ad, buffer_size);
+            memcpy(data->data_per_channel[i].buffer.ad, ch->buffer.ad, buffer_size);
         } else { // Pulse Channel
-            size_t buffer_size = sizeof(int) * channels[i].sampling_no;
+            size_t buffer_size = sizeof(int) * ch->sampling_no;
             data->data_per_channel[i].buffer.pulse = (int*)malloc(buffer_size);
              if (!data->data_per_channel[i].buffer.pulse) {
                 perror("Failed to allocate pulse buffer");
@@ -67,7 +68,7 @@ SamplingData* sampling_data_create(SamplingChannel* channels, int num_channels) 
                 free(data);
                 return NULL;
             }
-            memcpy(data->data_per_channel[i].buffer.pulse, channels[i].buffer.pulse, buffer_size);
+            memcpy(data->data_per_channel[i].buffer.pulse, ch->buffer.pulse, buffer_size);
         }
     }
 

@@ -1,43 +1,26 @@
 #include "vmonitor2_board.h"
 #include "vmonitor2_driver.h"
+#include "app_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define LOG_INFO(msg, ...) printf("[INFO] " msg "\n", ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) fprintf(stderr, "[ERROR] " msg "\n", ##__VA_ARGS__)
+#define LOG_INFO(msg, ...) printf("[VMB2_INFO] " msg "\n", ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...) fprintf(stderr, "[VMB2_ERROR] " msg "\n", ##__VA_ARGS__)
 
-// --- ライフサイクル管理 ---
+// VMonitor2Boardの具象構造体
+typedef struct {
+    unsigned int pulse_count_threshold;
+    unsigned int idle_reboot_type;
+    unsigned int idle_reboot_timeout;
+    short* ad_data[VMONITOR2_AD_CH_NO];
+} VMonitor2Board;
 
-VMonitor2Board* vmonitor2_board_create(void) {
-    VMonitor2Board* board = (VMonitor2Board*)malloc(sizeof(VMonitor2Board));
-    if (!board) {
-        LOG_ERROR("Failed to allocate memory for VMonitor2Board");
-        return NULL;
-    }
 
-    // 設定値をconfigから読み込む
-    board->pulse_count_threshold = PULSE_COUNT_THRESHOLD;
-    board->idle_reboot_type = IDLE_REBOOT_TYPE;
-    board->idle_reboot_timeout = IDLE_REBOOT_TIMEOUT;
+// --- インターフェースを実装する静的関数 ---
 
-    // ADデータバッファのメモリ確保
-    for (int i = 0; i < VMONITOR2_AD_CH_NO; ++i) {
-        board->ad_data[i] = (short*)malloc(sizeof(short) * VMONITOR2_SAMPLING_FREQUENCY);
-        if (!board->ad_data[i]) {
-            LOG_ERROR("Failed to allocate memory for AD data buffer #%d", i + 1);
-            // 確保済みのメモリを解放
-            for (int j = 0; j < i; ++j) {
-                free(board->ad_data[j]);
-            }
-            free(board);
-            return NULL;
-        }
-    }
-    return board;
-}
-
-void vmonitor2_board_destroy(VMonitor2Board* board) {
+static void destroy_impl(void* device_handle) {
+    VMonitor2Board* board = (VMonitor2Board*)device_handle;
     if (!board) return;
     for (int i = 0; i < VMONITOR2_AD_CH_NO; ++i) {
         free(board->ad_data[i]);
@@ -45,9 +28,8 @@ void vmonitor2_board_destroy(VMonitor2Board* board) {
     free(board);
 }
 
-// --- デバイス制御 ---
-
-bool vmonitor2_board_open(VMonitor2Board* board) {
+static bool open_impl(void* device_handle) {
+    VMonitor2Board* board = (VMonitor2Board*)device_handle;
     if (VM2_Open() != 0) {
         LOG_ERROR("VM2_Open failed");
         return false;
@@ -58,30 +40,19 @@ bool vmonitor2_board_open(VMonitor2Board* board) {
         return false;
     }
 
-    // パルスしきい値の設定
     unsigned int old_threshold;
     VM2_GetPulseVoltage(&old_threshold);
-    LOG_INFO("Old PulseThreshold:%u, New PulseThreshold:%u", old_threshold, board->pulse_count_threshold);
     if (old_threshold != board->pulse_count_threshold) {
-        LOG_INFO("Executing write pulse threshold...");
-        if (VM2_SetPulseVoltage(board->pulse_count_threshold) == 0) {
-            LOG_INFO("Write pulse threshold success.");
-        } else {
+        if (VM2_SetPulseVoltage(board->pulse_count_threshold) != 0) {
             LOG_ERROR("Write pulse threshold failed.");
             return false;
         }
     }
 
-    // コマンド未受信リブートの設定
     unsigned int old_type, old_timeout;
     VM2_GetIdleReboot(&old_type, &old_timeout);
-    LOG_INFO("Old IdleReboot Type:%u Timeout:%u, New Type:%u Timeout:%u",
-             old_type, old_timeout, board->idle_reboot_type, board->idle_reboot_timeout);
     if (old_type != board->idle_reboot_type || old_timeout != board->idle_reboot_timeout) {
-        LOG_INFO("Executing write idle reboot setting...");
-        if (VM2_SetIdleReboot(board->idle_reboot_type, board->idle_reboot_timeout) == 0) {
-            LOG_INFO("Write idle reboot setting success.");
-        } else {
+        if (VM2_SetIdleReboot(board->idle_reboot_type, board->idle_reboot_timeout) != 0) {
             LOG_ERROR("Write idle reboot setting failed.");
             return false;
         }
@@ -89,35 +60,40 @@ bool vmonitor2_board_open(VMonitor2Board* board) {
     return true;
 }
 
-void vmonitor2_board_close(void) {
+static void close_impl(void* device_handle) {
+    (void)device_handle; // この実装では未使用
     VM2_Close();
 }
 
-void vmonitor2_board_reset(void) {
+static void reset_impl(void* device_handle) {
+    (void)device_handle;
     VM2_Reset(1);
 }
 
-void vmonitor2_board_restart(void) {
+static void restart_impl(void* device_handle) {
+    (void)device_handle;
     VM2_Restart(5);
 }
 
-// --- サンプリング制御 ---
-
-bool vmonitor2_board_start_sampling(void) {
+static bool start_sampling_impl(void* device_handle) {
+    (void)device_handle;
     return VM2_StartSampling() == 0;
 }
 
-void vmonitor2_board_stop_sampling(void) {
+static void stop_sampling_impl(void* device_handle) {
+    (void)device_handle;
     VM2_StopSampling();
 }
 
-bool vmonitor2_board_check_data(void) {
+static bool check_data_impl(void* device_handle) {
+    (void)device_handle;
     int exist = 0;
     VM2_CheckBuffer(&exist);
     return exist == 1;
 }
 
-bool vmonitor2_board_get_data(VMonitor2Board* board, SamplingChannel* channels, int num_channels) {
+static bool get_data_impl(void* device_handle, SamplingChannel** channels, int num_channels) {
+    VMonitor2Board* board = (VMonitor2Board*)device_handle;
     int pulse_count = 0;
     if (VM2_GetData(
         board->ad_data[0], board->ad_data[1], board->ad_data[2], board->ad_data[3],
@@ -129,54 +105,32 @@ bool vmonitor2_board_get_data(VMonitor2Board* board, SamplingChannel* channels, 
     }
 
     for (int i = 0; i < num_channels; ++i) {
-        if (channels[i].ch_index > 0 && channels[i].ch_index <= VMONITOR2_AD_CH_NO) {
-            // ADチャンネル
-            memcpy(channels[i].buffer.ad,
-                   board->ad_data[channels[i].ch_index - 1],
-                   sizeof(short) * channels[i].sampling_no);
-        } else if (channels[i].ch_index == VMONITOR2_CH_NO) {
-            // パルスチャンネル
-            channels[i].buffer.pulse[0] = pulse_count;
+        SamplingChannel* ch = channels[i];
+        if (ch->ch_index > 0 && ch->ch_index <= VMONITOR2_AD_CH_NO) {
+            memcpy(ch->buffer.ad,
+                   board->ad_data[ch->ch_index - 1],
+                   sizeof(short) * ch->sampling_no);
+        } else if (ch->ch_index == VMONITOR2_CH_NO) {
+            ch->buffer.pulse[0] = pulse_count;
         }
     }
     return true;
 }
 
-// --- 状態および情報取得 ---
-
-unsigned int vmonitor2_board_get_status(void) {
-    unsigned int status = 0;
-    VM2_GetStatus(&status);
-    return status;
-}
-
-unsigned int vmonitor2_board_get_error_code(void) {
-    unsigned int code = 0;
-    VM2_GetDetailErrorCode(&code);
-    return code;
-}
-
-char* vmonitor2_board_get_version(void) {
+static char* get_version_impl(void* device_handle) {
+    (void)device_handle;
     unsigned int version = 0;
     VM2_GetVersion(&version);
-    char* version_str = (char*)malloc(9); // 8 hex chars + null terminator
+    char* version_str = (char*)malloc(9);
     if (version_str) {
         sprintf(version_str, "%08x", version);
     }
     return version_str;
 }
 
-double vmonitor2_board_get_terminal_voltage(int ch_index) {
-    unsigned int voltage_mv = 0;
-    VM2_GetTerminalAd(ch_index, &voltage_mv);
-    return (double)voltage_mv / 1000.0;
-}
-
-// --- チャンネル設定 ---
-
-double vmonitor2_board_get_gain(int ch_index) {
+static double get_gain_impl(void* device_handle, int ch_index) {
+    (void)device_handle;
     if (ch_index < 1 || ch_index >= VMONITOR2_CH_NO) return 1.0;
-
     unsigned int gain_no = 0;
     VM2_GetGain(ch_index, &gain_no);
     switch (gain_no) {
@@ -184,49 +138,125 @@ double vmonitor2_board_get_gain(int ch_index) {
         case 2: return 2.4;
         case 3: return 10.0;
         case 4: return 24.0;
-        default: return -1.0; // Error
+        default: return -1.0;
     }
 }
 
-bool vmonitor2_board_set_gain(int ch_index, double gain) {
+static bool set_gain_impl(void* device_handle, int ch_index, double gain) {
+    (void)device_handle;
     if (ch_index < 1 || ch_index >= VMONITOR2_CH_NO) return false;
-
     unsigned int gain_no;
     if (gain == 1.0) gain_no = 1;
     else if (gain == 2.4) gain_no = 2;
     else if (gain == 10.0) gain_no = 3;
     else if (gain == 24.0) gain_no = 4;
-    else return false; // Invalid gain value
-
+    else return false;
     return VM2_SetGain(ch_index, gain_no) == 0;
 }
 
-int vmonitor2_board_get_input(int ch_index) {
+static int get_input_impl(void* device_handle, int ch_index) {
+    (void)device_handle;
     if (ch_index < 1 || ch_index >= VMONITOR2_CH_NO) return 0;
     unsigned int select = 0;
     VM2_GetInputSelect(ch_index, &select);
     return select;
 }
 
-bool vmonitor2_board_set_input(int ch_index, int input) {
+static bool set_input_impl(void* device_handle, int ch_index, int input) {
+    (void)device_handle;
     if (ch_index < 1 || ch_index >= VMONITOR2_CH_NO) return false;
     return VM2_SetInputSelect(ch_index, input) == 0;
 }
 
-// --- デジタルI/O ---
+static double get_terminal_voltage_impl(void* device_handle, int ch_index) {
+    (void)device_handle;
+    unsigned int voltage_mv = 0;
+    VM2_GetTerminalAd(ch_index, &voltage_mv);
+    return (double)voltage_mv / 1000.0;
+}
 
-int vmonitor2_board_get_digital_in(int ch_index) {
+static int get_digital_in_impl(void* device_handle, int di_no) {
+    (void)device_handle;
     unsigned int status = 0;
-    VM2_GetDigitalIn(ch_index, &status);
+    VM2_GetDigitalIn(di_no, &status);
     return status;
 }
 
-int vmonitor2_board_get_digital_out(int ch_index) {
+static int get_digital_out_impl(void* device_handle, int do_no) {
+    (void)device_handle;
     unsigned int status = 0;
-    VM2_GetDigitalOut(ch_index, &status);
+    VM2_GetDigitalOut(do_no, &status);
     return status;
 }
 
-bool vmonitor2_board_set_digital_out(int ch_index, int status) {
-    return VM2_SetDigitalOut(ch_index, status) == 0;
+static bool set_digital_out_impl(void* device_handle, int do_no, int on_off) {
+    (void)device_handle;
+    return VM2_SetDigitalOut(do_no, on_off) == 0;
+}
+
+static int get_ad_ch_no_impl(void* device_handle) {
+    (void)device_handle;
+    return VMONITOR2_AD_CH_NO;
+}
+
+static bool check_sampling_freq_impl(void* device_handle, int ch_index, int sampling_freq) {
+    (void)device_handle;
+    if (ch_index > 0 && ch_index <= VMONITOR2_AD_CH_NO) {
+        return sampling_freq == VMONITOR2_SAMPLING_FREQUENCY;
+    } else if (ch_index == VMONITOR2_CH_NO) {
+        return sampling_freq == 1;
+    }
+    return false;
+}
+
+// --- vtableの定義 ---
+static const DeviceVTable vmonitor2_board_vtable_instance = {
+    .open = open_impl,
+    .close = close_impl,
+    .destroy = destroy_impl,
+    .get_version = get_version_impl,
+    .get_ad_ch_no = get_ad_ch_no_impl,
+    .check_sampling_freq = check_sampling_freq_impl,
+    .start_sampling = start_sampling_impl,
+    .stop_sampling = stop_sampling_impl,
+    .check_data = check_data_impl,
+    .get_data = get_data_impl,
+    .get_gain = get_gain_impl,
+    .set_gain = set_gain_impl,
+    .get_input = get_input_impl,
+    .set_input = set_input_impl,
+    .get_terminal_voltage = get_terminal_voltage_impl,
+    .get_digital_in = get_digital_in_impl,
+    .get_digital_out = get_digital_out_impl,
+    .set_digital_out = set_digital_out_impl,
+    .reset = reset_impl,
+    .restart = restart_impl,
+};
+
+// --- 公開関数 ---
+
+void* vmonitor2_board_new(void) {
+    VMonitor2Board* board = (VMonitor2Board*)calloc(1, sizeof(VMonitor2Board));
+    if (!board) {
+        LOG_ERROR("Failed to allocate memory for VMonitor2Board");
+        return NULL;
+    }
+
+    board->pulse_count_threshold = PULSE_COUNT_THRESHOLD;
+    board->idle_reboot_type = IDLE_REBOOT_TYPE;
+    board->idle_reboot_timeout = IDLE_REBOOT_TIMEOUT;
+
+    for (int i = 0; i < VMONITOR2_AD_CH_NO; ++i) {
+        board->ad_data[i] = (short*)malloc(sizeof(short) * VMONITOR2_SAMPLING_FREQUENCY);
+        if (!board->ad_data[i]) {
+            LOG_ERROR("Failed to allocate memory for AD data buffer #%d", i + 1);
+            destroy_impl(board); // 確保済みのメモリを解放
+            return NULL;
+        }
+    }
+    return board;
+}
+
+const DeviceVTable* vmonitor2_board_vtable(void) {
+    return &vmonitor2_board_vtable_instance;
 }

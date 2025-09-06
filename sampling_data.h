@@ -30,7 +30,7 @@ typedef struct {
 } SamplingData;
 
 // SamplingDataオブジェクトを作成/破棄するための関数プロトタイプ
-SamplingData* sampling_data_create(SamplingChannel* channels, int num_channels);
+SamplingData* sampling_data_create(SamplingChannel** channels, int num_channels);
 void sampling_data_destroy(SamplingData* data);
 
 #endif // SAMPLING_DATA_H
