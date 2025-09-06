@@ -1,12 +1,10 @@
 #include "vmonitor2_board.h"
 #include "vmonitor2_driver.h"
 #include "app_config.h"
+#include "logger.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define LOG_INFO(msg, ...) printf("[VMB2_INFO] " msg "\n", ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) fprintf(stderr, "[VMB2_ERROR] " msg "\n", ##__VA_ARGS__)
 
 // VMonitor2Boardの具象構造体
 typedef struct {
@@ -31,11 +29,11 @@ static void destroy_impl(void* device_handle) {
 static bool open_impl(void* device_handle) {
     VMonitor2Board* board = (VMonitor2Board*)device_handle;
     if (VM2_Open() != 0) {
-        LOG_ERROR("VM2_Open failed");
+        LOG_ERROR("VMB2", "VM2_Open failed");
         return false;
     }
     if (VM2_Initialize() != 0) {
-        LOG_ERROR("VM2_Initialize failed");
+        LOG_ERROR("VMB2", "VM2_Initialize failed");
         VM2_Close();
         return false;
     }
@@ -43,8 +41,9 @@ static bool open_impl(void* device_handle) {
     unsigned int old_threshold;
     VM2_GetPulseVoltage(&old_threshold);
     if (old_threshold != board->pulse_count_threshold) {
+        LOG_INFO("VMB2", "Pulse threshold mismatch. Old: %u, New: %u. Setting...", old_threshold, board->pulse_count_threshold);
         if (VM2_SetPulseVoltage(board->pulse_count_threshold) != 0) {
-            LOG_ERROR("Write pulse threshold failed.");
+            LOG_ERROR("VMB2", "Write pulse threshold failed.");
             return false;
         }
     }
@@ -52,8 +51,9 @@ static bool open_impl(void* device_handle) {
     unsigned int old_type, old_timeout;
     VM2_GetIdleReboot(&old_type, &old_timeout);
     if (old_type != board->idle_reboot_type || old_timeout != board->idle_reboot_timeout) {
+        LOG_INFO("VMB2", "Idle reboot mismatch. Old: %u/%u, New: %u/%u. Setting...", old_type, old_timeout, board->idle_reboot_type, board->idle_reboot_timeout);
         if (VM2_SetIdleReboot(board->idle_reboot_type, board->idle_reboot_timeout) != 0) {
-            LOG_ERROR("Write idle reboot setting failed.");
+            LOG_ERROR("VMB2", "Write idle reboot setting failed.");
             return false;
         }
     }
@@ -238,7 +238,7 @@ static const DeviceVTable vmonitor2_board_vtable_instance = {
 void* vmonitor2_board_new(void) {
     VMonitor2Board* board = (VMonitor2Board*)calloc(1, sizeof(VMonitor2Board));
     if (!board) {
-        LOG_ERROR("Failed to allocate memory for VMonitor2Board");
+        LOG_ERROR("VMB2", "Failed to allocate memory for VMonitor2Board");
         return NULL;
     }
 
@@ -249,7 +249,7 @@ void* vmonitor2_board_new(void) {
     for (int i = 0; i < VMONITOR2_AD_CH_NO; ++i) {
         board->ad_data[i] = (short*)malloc(sizeof(short) * VMONITOR2_SAMPLING_FREQUENCY);
         if (!board->ad_data[i]) {
-            LOG_ERROR("Failed to allocate memory for AD data buffer #%d", i + 1);
+            LOG_ERROR("VMB2", "Failed to allocate memory for AD data buffer #%d", i + 1);
             destroy_impl(board); // 確保済みのメモリを解放
             return NULL;
         }

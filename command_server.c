@@ -1,6 +1,7 @@
 #include "command_server.h"
 #include "commands.h"
 #include "app_config.h"
+#include "logger.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +32,7 @@ static char* serialize_data_proc(SamplingData* data, int ch_id_filter);
 CommandServer* command_server_create(int port, SamplingManager* manager) {
     CommandServer* server = (CommandServer*)calloc(1, sizeof(CommandServer));
     if (!server) {
-        LOG_SERVER_ERROR("Failed to allocate memory for CommandServer");
+        LOG_ERROR("SERVER", "Failed to allocate memory for CommandServer");
         return NULL;
     }
     server->port = port;
@@ -39,7 +40,7 @@ CommandServer* command_server_create(int port, SamplingManager* manager) {
 
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server->server_fd < 0) {
-        LOG_SERVER_ERROR("Socket creation failed");
+        LOG_ERROR("SERVER", "Socket creation failed");
         free(server);
         return NULL;
     }
@@ -53,20 +54,20 @@ CommandServer* command_server_create(int port, SamplingManager* manager) {
     server_addr.sin_port = htons(port);
 
     if (bind(server->server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        LOG_SERVER_ERROR("Socket bind failed");
+        LOG_ERROR("SERVER", "Socket bind failed");
         close(server->server_fd);
         free(server);
         return NULL;
     }
 
     if (listen(server->server_fd, MAX_CLIENTS) < 0) {
-        LOG_SERVER_ERROR("Socket listen failed");
+        LOG_ERROR("SERVER", "Socket listen failed");
         close(server->server_fd);
         free(server);
         return NULL;
     }
 
-    LOG_SERVER_INFO("Server initialized on port %d", port);
+    LOG_INFO("SERVER", "Server initialized on port %d", port);
     return server;
 }
 
@@ -74,7 +75,7 @@ bool command_server_start(CommandServer* server) {
     if (!server) return false;
     server->running = true;
     if (pthread_create(&server->server_thread_id, NULL, server_loop, server) != 0) {
-        LOG_SERVER_ERROR("Failed to create server accept thread");
+        LOG_ERROR("SERVER", "Failed to create server accept thread");
         server->running = false;
         return false;
     }
@@ -87,7 +88,7 @@ void command_server_stop(CommandServer* server) {
         shutdown(server->server_fd, SHUT_RDWR);
         close(server->server_fd);
         pthread_join(server->server_thread_id, NULL);
-        LOG_SERVER_INFO("Server stopped.");
+        LOG_INFO("SERVER", "Server stopped.");
     }
 }
 
@@ -101,14 +102,14 @@ void command_server_destroy(CommandServer* server) {
 
 static void* server_loop(void* server_ptr) {
     CommandServer* server = (CommandServer*)server_ptr;
-    LOG_SERVER_INFO("Server accept loop started.");
+    LOG_INFO("SERVER", "Server accept loop started.");
     while (server->running) {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
         int client_fd = accept(server->server_fd, (struct sockaddr*)&client_addr, &client_len);
 
         if (client_fd < 0) {
-            if (server->running) LOG_SERVER_ERROR("Accept failed");
+            if (server->running) LOG_ERROR("SERVER", "Accept failed");
             break;
         }
 
@@ -119,13 +120,13 @@ static void* server_loop(void* server_ptr) {
 
         pthread_t client_thread;
         if (pthread_create(&client_thread, NULL, client_thread_proc, context) != 0) {
-            LOG_SERVER_ERROR("Failed to create client thread");
+            LOG_ERROR("SERVER", "Failed to create client thread");
             close(client_fd);
             free(context);
         }
         pthread_detach(client_thread);
     }
-    LOG_SERVER_INFO("Server accept loop finished.");
+    LOG_INFO("SERVER", "Server accept loop finished.");
     return NULL;
 }
 
@@ -134,11 +135,11 @@ static void* client_thread_proc(void* context) {
     char buffer[BUFFER_SIZE];
     char client_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &ctx->client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
-    LOG_SERVER_INFO("Client connected: %s", client_ip);
+    LOG_INFO("SERVER", "Client connected: %s", client_ip);
 
     FILE* client_stream = fdopen(ctx->client_fd, "r+");
     if (!client_stream) {
-        LOG_SERVER_ERROR("fdopen failed for client %s", client_ip);
+        LOG_ERROR("SERVER", "fdopen failed for client %s", client_ip);
         close(ctx->client_fd);
         free(ctx);
         return NULL;
@@ -147,7 +148,7 @@ static void* client_thread_proc(void* context) {
 
     while (fgets(buffer, sizeof(buffer), client_stream)) {
         buffer[strcspn(buffer, "\r\n")] = 0;
-        LOG_SERVER_INFO("Recv from %s: %s", client_ip, buffer);
+        LOG_INFO("SERVER", "Recv from %s: %s", client_ip, buffer);
 
         char* response = command_proc(ctx->server, buffer);
         if (response) {
@@ -156,7 +157,7 @@ static void* client_thread_proc(void* context) {
         }
     }
 
-    LOG_SERVER_INFO("Client disconnected: %s", client_ip);
+    LOG_INFO("SERVER", "Client disconnected: %s", client_ip);
     fclose(client_stream);
     free(ctx);
     return NULL;

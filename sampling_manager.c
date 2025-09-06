@@ -1,12 +1,10 @@
 #include "sampling_manager.h"
 #include "app_config.h"
+#include "logger.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-
-#define LOG_INFO(msg, ...) printf("[MGR_INFO] " msg "\n", ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) fprintf(stderr, "[MGR_ERROR] " msg "\n", ##__VA_ARGS__)
 
 // データ収集を実行するスレッド関数
 static void* run_loop(void* arg) {
@@ -14,10 +12,9 @@ static void* run_loop(void* arg) {
     long no_data_times = 0;
     const long timeout_threshold = (1000000 / CHECK_DATA_INTERVAL_USEC) * NO_DATA_TIME_OUT_SEC;
 
-    LOG_INFO("Data acquisition thread started.");
+    LOG_INFO("MANAGER", "Data acquisition thread started.");
 
     while (manager->running) {
-        // 各デバイスでデータ確認
         for (int i = 0; i < manager->num_devices; ++i) {
             SamplingDevice* device = manager->devices[i];
             if (!device->is_get_data && sampling_device_check_data(device)) {
@@ -25,7 +22,6 @@ static void* run_loop(void* arg) {
             }
         }
 
-        // すべてのデバイスがデータ収集を終えたか確認
         bool all_data_ready = true;
         if (manager->num_devices == 0) {
             all_data_ready = false;
@@ -38,34 +34,30 @@ static void* run_loop(void* arg) {
         }
 
         if (all_data_ready) {
-            // 全チャンネルのデータが揃ったのでキューに入れる
             SamplingData* data = sampling_data_create(manager->channels, manager->num_channels);
             if (data) {
                 for (int i = 0; i < manager->num_queues; ++i) {
                     queue_enqueue(manager->data_queues[i], data);
                 }
             }
-            // 全デバイスのデータ取得済フラグを落とす
             for (int i = 0; i < manager->num_devices; ++i) {
                 sampling_device_get_data_clear(manager->devices[i]);
             }
             no_data_times = 0;
         } else {
-            // データが揃っていない場合
             no_data_times++;
             if (no_data_times > timeout_threshold) {
-                LOG_ERROR("No data timeout (%ld counts). Restarting all devices.", no_data_times);
+                LOG_ERROR("MANAGER", "No data timeout (%ld counts). Restarting all devices.", no_data_times);
                 for (int i = 0; i < manager->num_devices; ++i) {
                     sampling_device_restart(manager->devices[i]);
                 }
                 no_data_times = 0;
             }
-            // 短い待機
             struct timespec req = {0, CHECK_DATA_INTERVAL_USEC * 1000L};
             nanosleep(&req, NULL);
         }
     }
-    LOG_INFO("Data acquisition thread finished.");
+    LOG_INFO("MANAGER", "Data acquisition thread finished.");
     return NULL;
 }
 
@@ -167,7 +159,7 @@ bool sampling_manager_start(SamplingManager* manager) {
 
     manager->running = true;
     if (pthread_create(&manager->run_thread, NULL, run_loop, manager) != 0) {
-        LOG_ERROR("Failed to create data acquisition thread.");
+        LOG_ERROR("MANAGER", "Failed to create data acquisition thread.");
         manager->running = false;
         return false;
     }
@@ -183,7 +175,7 @@ void sampling_manager_stop(SamplingManager* manager) {
         sampling_device_stop_sampling(manager->devices[i]);
         sampling_device_close(manager->devices[i]);
     }
-    LOG_INFO("Manager stopped.");
+    LOG_INFO("MANAGER", "Manager stopped.");
 }
 
 // --- デバイスへの問い合わせ関数 ---

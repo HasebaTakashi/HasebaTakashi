@@ -1,18 +1,16 @@
 #include "sampling_device.h"
 #include "vmonitor2_board.h" // vmonitor2の生成関数とvtable取得関数を呼び出すため
+#include "logger.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#define LOG_INFO(msg, ...) printf("[DEV_INFO] " msg "\n", ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) fprintf(stderr, "[DEV_ERROR] " msg "\n", ##__VA_ARGS__)
 
 // --- ライフサイクル管理 ---
 
 SamplingDevice* sampling_device_create(DeviceType id, const char* name, int channel_no) {
     SamplingDevice* device = (SamplingDevice*)calloc(1, sizeof(SamplingDevice));
     if (!device) {
-        LOG_ERROR("Failed to allocate memory for SamplingDevice");
+        LOG_ERROR("DEVICE", "Failed to allocate memory for SamplingDevice");
         return NULL;
     }
 
@@ -33,13 +31,13 @@ SamplingDevice* sampling_device_create(DeviceType id, const char* name, int chan
         //     device->vtable = dummy_device_vtable();
         //     break;
         default:
-            LOG_ERROR("Unknown device ID: %d", id);
+            LOG_ERROR("DEVICE", "Unknown device ID: %d", id);
             free(device);
             return NULL;
     }
 
     if (!device->handle || !device->vtable) {
-        LOG_ERROR("Failed to create concrete device or get vtable for ID: %d", id);
+        LOG_ERROR("DEVICE", "Failed to create concrete device or get vtable for ID: %d", id);
         if (device->handle) {
             // handleは作られたがvtableがなかった場合、handleを解放
             device->vtable->destroy(device->handle);
@@ -64,19 +62,19 @@ void sampling_device_destroy(SamplingDevice* device) {
 
 bool sampling_device_attach_channel(SamplingDevice* device, SamplingChannel* channel) {
     if (device->num_attached_channels >= device->max_channels) {
-        LOG_ERROR("Device '%s' cannot attach more channels (max: %d)", device->name, device->max_channels);
+        LOG_ERROR("DEVICE", "Device '%s' cannot attach more channels (max: %d)", device->name, device->max_channels);
         return false;
     }
 
     // デバイスがこのチャンネルのサンプリング周波数をサポートしているか確認
     if (!device->vtable->check_sampling_freq(device->handle, channel->ch_index, channel->sampling_no)) {
-        LOG_ERROR("Channel %d sampling freq %d not supported by device '%s'",
+        LOG_ERROR("DEVICE", "Channel %d sampling freq %d not supported by device '%s'",
                   channel->id, channel->sampling_no, device->name);
         return false;
     }
 
     device->attached_channels[device->num_attached_channels++] = channel;
-    LOG_INFO("Attached channel %d to device '%s'", channel->id, device->name);
+    LOG_INFO("DEVICE", "Attached channel %d to device '%s'", channel->id, device->name);
     return true;
 }
 
@@ -91,10 +89,10 @@ void sampling_device_close(SamplingDevice* device) {
 }
 
 bool sampling_device_prepare_sampling(SamplingDevice* device) {
-    LOG_INFO("Preparing sampling for device '%s'...", device->name);
+    LOG_INFO("DEVICE", "Preparing sampling for device '%s'...", device->name);
     char* version = device->vtable->get_version(device->handle);
     if (version) {
-        LOG_INFO("Device '%s' version: %s", device->name, version);
+        LOG_INFO("DEVICE", "Device '%s' version: %s", device->name, version);
         free(version);
     }
 
@@ -104,7 +102,7 @@ bool sampling_device_prepare_sampling(SamplingDevice* device) {
         // 入力種別の確認と設定
         int current_input = device->vtable->get_input(device->handle, ch->ch_index);
         if (current_input != ch->input_type) {
-            LOG_INFO("CH:%d Input mismatch on '%s'. Current:%d, Target:%d. Setting...",
+            LOG_INFO("DEVICE", "CH:%d Input mismatch on '%s'. Current:%d, Target:%d. Setting...",
                      ch->id, device->name, current_input, ch->input_type);
             device->vtable->set_input(device->handle, ch->ch_index, ch->input_type);
         }
@@ -112,7 +110,7 @@ bool sampling_device_prepare_sampling(SamplingDevice* device) {
         // ゲインの確認と設定
         double current_gain = device->vtable->get_gain(device->handle, ch->ch_index);
         if (current_gain != ch->gain) {
-            LOG_INFO("CH:%d Gain mismatch on '%s'. Current:%.1f, Target:%.1f. Setting...",
+            LOG_INFO("DEVICE", "CH:%d Gain mismatch on '%s'. Current:%.1f, Target:%.1f. Setting...",
                      ch->id, device->name, current_gain, ch->gain);
             device->vtable->set_gain(device->handle, ch->ch_index, ch->gain);
         }
