@@ -192,9 +192,12 @@ static bool parse_device_settings(const char* json_str, DeviceSetting** settings
         return false;
     }
 
-    cJSON* dev_obj = NULL;
+    cJSON* dev_item = NULL;
     int i = 0;
-    cJSON_ArrayForEach(dev_obj, root) {
+    // cJSON_ArrayForEachはオブジェクトのイテレーションにも使える
+    cJSON_ArrayForEach(dev_item, root) {
+        // dev_item は "Device1" のようなキーを持つアイテム。その値(child)が設定オブジェクト
+        cJSON* dev_obj = dev_item; // The item itself is the value object in this iteration
         DeviceSetting* ds = &(*settings)[i];
         GET_JSON_INT(dev_obj, "DeviceID", ds->id);
         GET_JSON_STRING(dev_obj, "DeviceName", ds->name, sizeof(ds->name));
@@ -218,9 +221,11 @@ static bool parse_channel_settings(const char* json_str, ChannelSetting** settin
         return false;
     }
 
-    cJSON* ch_obj = NULL;
+    cJSON* ch_item = NULL;
     int i = 0;
-    cJSON_ArrayForEach(ch_obj, root) {
+    // cJSON_ArrayForEachはオブジェクトのイテレーションにも使える
+    cJSON_ArrayForEach(ch_item, root) {
+        cJSON* ch_obj = ch_item; // The item itself is the value object
         ChannelSetting* cs = &(*settings)[i];
         GET_JSON_INT(ch_obj, "ChannelID", cs->channel_id);
         GET_JSON_STRING(ch_obj, "ChannelName", cs->channel_name, sizeof(cs->channel_name));

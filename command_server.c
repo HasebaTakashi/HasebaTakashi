@@ -15,20 +15,21 @@
 #define BUFFER_SIZE 1024
 #define LARGE_RESPONSE_SIZE (32 * 1024 * 16)
 
-#define LOG_SERVER_INFO(msg, ...) printf("[SERVER_INFO] " msg "\n", ##__VA_ARGS__)
-#define LOG_SERVER_ERROR(msg, ...) fprintf(stderr, "[SERVER_ERROR] " msg "\n", ##__VA_ARGS__)
-
 typedef struct {
     int client_fd;
     struct sockaddr_in client_addr;
     CommandServer* server;
 } ClientContext;
 
+// --- Protos ---
 static char* command_proc(CommandServer* server, char* command_line);
 static void* client_thread_proc(void* context);
 static void* server_loop(void* server_ptr);
 static char* serialize_data_proc(SamplingData* data, int ch_id_filter);
+static char* alloc_response_int(int value);
+static char* alloc_response_double(double value);
 
+// --- Lifecycle ---
 CommandServer* command_server_create(int port, SamplingManager* manager) {
     CommandServer* server = (CommandServer*)calloc(1, sizeof(CommandServer));
     if (!server) {
@@ -37,40 +38,33 @@ CommandServer* command_server_create(int port, SamplingManager* manager) {
     }
     server->port = port;
     server->manager = manager;
-
     server->server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server->server_fd < 0) {
         LOG_ERROR("SERVER", "Socket creation failed");
         free(server);
         return NULL;
     }
-
     int opt = 1;
     setsockopt(server->server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
-
     if (bind(server->server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         LOG_ERROR("SERVER", "Socket bind failed");
         close(server->server_fd);
         free(server);
         return NULL;
     }
-
     if (listen(server->server_fd, MAX_CLIENTS) < 0) {
         LOG_ERROR("SERVER", "Socket listen failed");
         close(server->server_fd);
         free(server);
         return NULL;
     }
-
     LOG_INFO("SERVER", "Server initialized on port %d", port);
     return server;
 }
-
 bool command_server_start(CommandServer* server) {
     if (!server) return false;
     server->running = true;
@@ -81,7 +75,6 @@ bool command_server_start(CommandServer* server) {
     }
     return true;
 }
-
 void command_server_stop(CommandServer* server) {
     if (server && server->running) {
         server->running = false;
@@ -91,7 +84,6 @@ void command_server_stop(CommandServer* server) {
         LOG_INFO("SERVER", "Server stopped.");
     }
 }
-
 void command_server_destroy(CommandServer* server) {
     if (!server) return;
     if (server->running) {
@@ -100,6 +92,7 @@ void command_server_destroy(CommandServer* server) {
     free(server);
 }
 
+// --- Server/Client Loops ---
 static void* server_loop(void* server_ptr) {
     CommandServer* server = (CommandServer*)server_ptr;
     LOG_INFO("SERVER", "Server accept loop started.");
@@ -107,17 +100,14 @@ static void* server_loop(void* server_ptr) {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
         int client_fd = accept(server->server_fd, (struct sockaddr*)&client_addr, &client_len);
-
         if (client_fd < 0) {
             if (server->running) LOG_ERROR("SERVER", "Accept failed");
             break;
         }
-
         ClientContext* context = (ClientContext*)malloc(sizeof(ClientContext));
         context->client_fd = client_fd;
         context->client_addr = client_addr;
         context->server = server;
-
         pthread_t client_thread;
         if (pthread_create(&client_thread, NULL, client_thread_proc, context) != 0) {
             LOG_ERROR("SERVER", "Failed to create client thread");
@@ -129,14 +119,12 @@ static void* server_loop(void* server_ptr) {
     LOG_INFO("SERVER", "Server accept loop finished.");
     return NULL;
 }
-
 static void* client_thread_proc(void* context) {
     ClientContext* ctx = (ClientContext*)context;
     char buffer[BUFFER_SIZE];
     char client_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &ctx->client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
     LOG_INFO("SERVER", "Client connected: %s", client_ip);
-
     FILE* client_stream = fdopen(ctx->client_fd, "r+");
     if (!client_stream) {
         LOG_ERROR("SERVER", "fdopen failed for client %s", client_ip);
@@ -145,93 +133,80 @@ static void* client_thread_proc(void* context) {
         return NULL;
     }
     setvbuf(client_stream, NULL, _IOLBF, 0);
-
     while (fgets(buffer, sizeof(buffer), client_stream)) {
         buffer[strcspn(buffer, "\r\n")] = 0;
         LOG_INFO("SERVER", "Recv from %s: %s", client_ip, buffer);
-
         char* response = command_proc(ctx->server, buffer);
         if (response) {
             fprintf(client_stream, "%s\n", response);
             free(response);
         }
     }
-
     LOG_INFO("SERVER", "Client disconnected: %s", client_ip);
     fclose(client_stream);
     free(ctx);
     return NULL;
 }
 
+// --- Helpers ---
 static char* serialize_data_proc(SamplingData* data, int ch_id_filter) {
     if (!data) return strdup("NoData");
-
     char* response = (char*)malloc(LARGE_RESPONSE_SIZE);
     if (!response) return strdup("Error: Out of memory");
-
     response[0] = '\0';
     char* current_pos = response;
     int remaining_size = LARGE_RESPONSE_SIZE;
     bool channel_found = (ch_id_filter == 0);
-
     for (int i = 0; i < data->num_channels; ++i) {
         struct DataPerChannel* dpc = &data->data_per_channel[i];
-        if (ch_id_filter != 0 && dpc->channel_id != ch_id_filter) {
-            continue;
-        }
+        if (ch_id_filter != 0 && dpc->channel_id != ch_id_filter) continue;
         channel_found = true;
-        if (dpc->ch_index == VMONITOR2_CH_NO) {
-            for (int j = 0; j < dpc->sampling_no; ++j) {
-                int n = snprintf(current_pos, remaining_size, "%d,", dpc->buffer.pulse[j]);
-                current_pos += n;
-                remaining_size -= n;
+        for (int j = 0; j < dpc->sampling_no; ++j) {
+            int n = 0;
+            if (dpc->ch_index == VMONITOR2_CH_NO) {
+                n = snprintf(current_pos, remaining_size, "%d,", dpc->buffer.pulse[j]);
+            } else {
+                n = snprintf(current_pos, remaining_size, "%d,", dpc->buffer.ad[j]);
             }
-        } else {
-            for (int j = 0; j < dpc->sampling_no; ++j) {
-                int n = snprintf(current_pos, remaining_size, "%d,", dpc->buffer.ad[j]);
+            if (n > 0) {
                 current_pos += n;
                 remaining_size -= n;
             }
         }
     }
-
     if (!channel_found) {
         snprintf(response, LARGE_RESPONSE_SIZE, "Error Not exist ch:%d", ch_id_filter);
         return response;
     }
-
     struct tm* tm_info = localtime(&data->data_time.tv_sec);
     snprintf(current_pos, remaining_size, "%d,%d,%d,%d,%d,%d",
              tm_info->tm_year + 1900, tm_info->tm_mon + 1, tm_info->tm_mday,
              tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec);
-
     return response;
 }
-
 static char* alloc_response_int(int value) {
     char* response = malloc(16);
     snprintf(response, 16, "%d", value);
     return response;
 }
-
 static char* alloc_response_double(double value) {
     char* response = malloc(32);
     snprintf(response, 32, "%f", value);
     return response;
 }
 
+// --- Command Processor ---
 static char* command_proc(CommandServer* server, char* command_line) {
     char* saveptr;
     char* command = strtok_r(command_line, ",", &saveptr);
     if (!command) return alloc_response_int(CMD_ERR_UNKNOWN);
-
     SamplingManager* sm = server->manager;
 
     if (strcmp(command, CMD_CHECK_VERSION) == 0) {
         return strdup("C-Driver Ver. 1.0.0");
     }
     if (strcmp(command, CMD_GET_CH_ID) == 0) {
-        char* response = malloc(LARGE_RESPONSE_SIZE);
+        char* response = malloc(512);
         response[0] = '\0';
         char* current_pos = response;
         for (int i = 0; i < sm->num_channels; ++i) {
@@ -251,7 +226,7 @@ static char* command_proc(CommandServer* server, char* command_line) {
                 return response;
             }
         }
-        return strdup("");
+        return strdup(""); // Return empty string if not found
     }
     if (strcmp(command, CMD_CHECK_DATA) == 0) {
         char* arg1 = strtok_r(NULL, ",", &saveptr);
@@ -297,6 +272,35 @@ static char* command_proc(CommandServer* server, char* command_line) {
         }
         return alloc_response_int(CMD_ERR_BUFFER_NO);
     }
+    if (strcmp(command, CMD_START_SAMPLING) == 0 || strcmp(command, CMD_SET_DATA_TIME_2) == 0 || strcmp(command, CMD_SET_DATA_TIME) == 0) {
+        // These commands all set the data time in the queue
+        char* arg1 = strtok_r(NULL, ",", &saveptr);
+        if(!arg1) return alloc_response_int(CMD_ERR_ARGUMENTS);
+        int buffer_no = atoi(arg1);
+        if(buffer_no <= 0 || buffer_no > sm->num_queues) return alloc_response_int(CMD_ERR_BUFFER_NO);
+
+        struct timespec ts;
+        if(strcmp(command, CMD_START_SAMPLING) == 0) {
+             clock_gettime(CLOCK_REALTIME, &ts);
+        } else if (strcmp(command, CMD_SET_DATA_TIME) == 0) {
+            char* arg2 = strtok_r(NULL, ",", &saveptr);
+            if(!arg2) return alloc_response_int(CMD_ERR_ARGUMENTS);
+            ts.tv_sec = atol(arg2);
+            ts.tv_nsec = 0;
+        } else { // SET_DATA_TIME_2
+            struct tm t = {0};
+            t.tm_year = atoi(strtok_r(NULL, ",", &saveptr)) - 1900;
+            t.tm_mon = atoi(strtok_r(NULL, ",", &saveptr)) - 1;
+            t.tm_mday = atoi(strtok_r(NULL, ",", &saveptr));
+            t.tm_hour = atoi(strtok_r(NULL, ",", &saveptr));
+            t.tm_min = atoi(strtok_r(NULL, ",", &saveptr));
+            t.tm_sec = atoi(strtok_r(NULL, ",", &saveptr));
+            ts.tv_sec = mktime(&t);
+            ts.tv_nsec = 0;
+        }
+        queue_remove_older_than(sm->data_queues[buffer_no-1], &ts);
+        return alloc_response_int(CMD_RESPONSE_OK);
+    }
     if (strcmp(command, CMD_CLEAR_BUFFER) == 0) {
         char* arg1 = strtok_r(NULL, ",", &saveptr);
         if (!arg1) return alloc_response_int(CMD_ERR_ARGUMENTS);
@@ -312,6 +316,10 @@ static char* command_proc(CommandServer* server, char* command_line) {
         if (!arg1) return alloc_response_int(CMD_ERR_ARGUMENTS);
         int ch_no = atoi(arg1);
         return alloc_response_double(sampling_manager_get_terminal_voltage(sm, ch_no));
+    }
+    if (strcmp(command, CMD_GET_ALL_TERMINAL_VOLTAGES) == 0) {
+        // This requires a new function in sampling_manager
+        return strdup("Not Implemented Yet");
     }
     if (strcmp(command, CMD_GET_GAIN) == 0) {
         char* arg1 = strtok_r(NULL, ",", &saveptr);

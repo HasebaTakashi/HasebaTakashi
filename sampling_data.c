@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 
 SamplingData* sampling_data_create(SamplingChannel** channels, int num_channels) {
     if (!channels || num_channels <= 0) {
@@ -32,13 +33,11 @@ SamplingData* sampling_data_create(SamplingChannel** channels, int num_channels)
         data->data_per_channel[i].ch_index = ch->ch_index;
         data->data_per_channel[i].sampling_no = ch->sampling_no;
 
-        // ch_index を使ってADチャンネルかパルスチャンネルかを判断
         if (ch->ch_index < VMONITOR2_CH_NO) { // AD Channel
             size_t buffer_size = sizeof(short) * ch->sampling_no;
             data->data_per_channel[i].buffer.ad = (short*)malloc(buffer_size);
             if (!data->data_per_channel[i].buffer.ad) {
                 perror("Failed to allocate ad buffer");
-                // エラー発生時、それまでに確保したメモリをすべて解放する
                 for (int j = 0; j < i; ++j) {
                     if (data->data_per_channel[j].ch_index < VMONITOR2_CH_NO) {
                         free(data->data_per_channel[j].buffer.ad);
@@ -56,7 +55,6 @@ SamplingData* sampling_data_create(SamplingChannel** channels, int num_channels)
             data->data_per_channel[i].buffer.pulse = (int*)malloc(buffer_size);
              if (!data->data_per_channel[i].buffer.pulse) {
                 perror("Failed to allocate pulse buffer");
-                // エラー発生時、それまでに確保したメモリをすべて解放する
                  for (int j = 0; j < i; ++j) {
                     if (data->data_per_channel[j].ch_index < VMONITOR2_CH_NO) {
                         free(data->data_per_channel[j].buffer.ad);
@@ -82,9 +80,13 @@ void sampling_data_destroy(SamplingData* data) {
 
     for (int i = 0; i < data->num_channels; ++i) {
         if (data->data_per_channel[i].ch_index < VMONITOR2_CH_NO) { // AD Channel
-            free(data->data_per_channel[i].buffer.ad);
+            if (data->data_per_channel[i].buffer.ad) {
+                free(data->data_per_channel[i].buffer.ad);
+            }
         } else { // Pulse Channel
-            free(data->data_per_channel[i].buffer.pulse);
+            if (data->data_per_channel[i].buffer.pulse) {
+                free(data->data_per_channel[i].buffer.pulse);
+            }
         }
     }
     free(data->data_per_channel);

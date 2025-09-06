@@ -1,5 +1,6 @@
 #include "sampling_device.h"
-#include "vmonitor2_board.h" // vmonitor2の生成関数とvtable取得関数を呼び出すため
+#include "vmonitor2_board.h"
+#include "dummy_device.h"
 #include "logger.h"
 #include "config_manager.h" // For AppConfig struct definition
 #include <stdlib.h>
@@ -26,11 +27,10 @@ SamplingDevice* sampling_device_create(DeviceType id, const char* name, int chan
             device->handle = vmonitor2_board_new(app_config);
             device->vtable = vmonitor2_board_vtable();
             break;
-        // --- 他のデバイスを追加する場合は、ここにcaseを追加 ---
-        // case DUMMY_DEVICE_ID:
-        //     device->handle = dummy_device_new();
-        //     device->vtable = dummy_device_vtable();
-        //     break;
+        case DUMMY_DEVICE_ID:
+            device->handle = dummy_device_new();
+            device->vtable = dummy_device_vtable();
+            break;
         default:
             LOG_ERROR("DEVICE", "Unknown device ID: %d", id);
             free(device);

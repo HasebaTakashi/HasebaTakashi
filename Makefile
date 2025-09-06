@@ -12,10 +12,10 @@ CFLAGS = -Wall -Wextra -g -std=c11 -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -L. -lvmonitor2 -pthread -lrt
 
 # 生成する実行ファイル名
-TARGET = vmonitor_c_app
+TARGET = virtualdriver
 
 # ソースファイル一覧
-SRCS = main.c cJSON.c config_manager.c sampling_data.c sampling_queue.c vmonitor2_board.c sampling_device.c sampling_manager.c command_server.c logger.c
+SRCS = main.c cJSON.c config_manager.c sampling_data.c sampling_queue.c vmonitor2_board.c dummy_device.c sampling_device.c sampling_manager.c command_server.c logger.c
 
 # オブジェクトファイル一覧 (ソースファイル名から自動生成)
 OBJS = $(SRCS:.c=.o)
