@@ -28,8 +28,11 @@ typedef struct SamplingDevice {
     const DeviceVTable* vtable;
 } SamplingDevice;
 
+// Forward declaration for AppConfig to avoid circular includes
+struct AppConfig;
+
 // --- ライフサイクル管理 ---
-SamplingDevice* sampling_device_create(DeviceType id, const char* name, int channel_no);
+SamplingDevice* sampling_device_create(DeviceType id, const char* name, int channel_no, const struct AppConfig* app_config);
 void sampling_device_destroy(SamplingDevice* device);
 
 // --- チャンネル管理 ---

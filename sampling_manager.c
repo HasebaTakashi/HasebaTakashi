@@ -61,9 +61,12 @@ static void* run_loop(void* arg) {
     return NULL;
 }
 
+#include "config_manager.h" // For AppConfig struct definition
+
 // --- ライフサイクル管理 ---
 
 SamplingManager* sampling_manager_create(
+    const struct AppConfig* app_config,
     DeviceSetting* device_settings, int num_device_settings,
     ChannelSetting* channel_settings, int num_channel_settings,
     SamplingQueue** queues, int num_queues
@@ -78,7 +81,7 @@ SamplingManager* sampling_manager_create(
     for (int i = 0; i < num_device_settings; ++i) {
         if (device_settings[i].enable) {
             manager->devices[manager->num_devices++] = sampling_device_create(
-                device_settings[i].id, device_settings[i].name, device_settings[i].channel_no);
+                device_settings[i].id, device_settings[i].name, device_settings[i].channel_no, app_config);
         }
     }
 

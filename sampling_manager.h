@@ -46,8 +46,12 @@ typedef struct {
     volatile bool running;  // スレッドの実行状態を制御するフラグ
 } SamplingManager;
 
+// Forward declaration for AppConfig to avoid circular includes
+struct AppConfig;
+
 // --- ライフサイクル管理 ---
 SamplingManager* sampling_manager_create(
+    const struct AppConfig* app_config,
     DeviceSetting* device_settings, int num_device_settings,
     ChannelSetting* channel_settings, int num_channel_settings,
     SamplingQueue** queues, int num_queues

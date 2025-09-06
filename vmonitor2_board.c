@@ -235,16 +235,19 @@ static const DeviceVTable vmonitor2_board_vtable_instance = {
 
 // --- 公開関数 ---
 
-void* vmonitor2_board_new(void) {
+#include "config_manager.h" // For AppConfig struct definition
+
+void* vmonitor2_board_new(const struct AppConfig* app_config) {
     VMonitor2Board* board = (VMonitor2Board*)calloc(1, sizeof(VMonitor2Board));
     if (!board) {
         LOG_ERROR("VMB2", "Failed to allocate memory for VMonitor2Board");
         return NULL;
     }
 
-    board->pulse_count_threshold = PULSE_COUNT_THRESHOLD;
-    board->idle_reboot_type = IDLE_REBOOT_TYPE;
-    board->idle_reboot_timeout = IDLE_REBOOT_TIMEOUT;
+    // 設定ファイルから読み込んだ値を使用
+    board->pulse_count_threshold = app_config->pulse_count_threshold;
+    board->idle_reboot_type = app_config->idle_reboot_type;
+    board->idle_reboot_timeout = app_config->idle_reboot_timeout;
 
     for (int i = 0; i < VMONITOR2_AD_CH_NO; ++i) {
         board->ad_data[i] = (short*)malloc(sizeof(short) * VMONITOR2_SAMPLING_FREQUENCY);

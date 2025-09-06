@@ -1,13 +1,14 @@
 #include "sampling_device.h"
 #include "vmonitor2_board.h" // vmonitor2の生成関数とvtable取得関数を呼び出すため
 #include "logger.h"
+#include "config_manager.h" // For AppConfig struct definition
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 // --- ライフサイクル管理 ---
 
-SamplingDevice* sampling_device_create(DeviceType id, const char* name, int channel_no) {
+SamplingDevice* sampling_device_create(DeviceType id, const char* name, int channel_no, const struct AppConfig* app_config) {
     SamplingDevice* device = (SamplingDevice*)calloc(1, sizeof(SamplingDevice));
     if (!device) {
         LOG_ERROR("DEVICE", "Failed to allocate memory for SamplingDevice");
@@ -22,7 +23,7 @@ SamplingDevice* sampling_device_create(DeviceType id, const char* name, int chan
     // デバイスIDに基づいて具象オブジェクトとvtableを割り当てる
     switch (id) {
         case VMONITOR2_BOARD_ID:
-            device->handle = vmonitor2_board_new();
+            device->handle = vmonitor2_board_new(app_config);
             device->vtable = vmonitor2_board_vtable();
             break;
         // --- 他のデバイスを追加する場合は、ここにcaseを追加 ---
