@@ -7,6 +7,8 @@ require 'thread'
 # polls the hardware, and when a 1-second data block is ready, it fetches
 # it and pushes it to the sampling queue.
 class SamplingManager
+  attr_reader :devices
+
   def initialize(app_settings, device_settings_manager, channel_settings_manager, sampling_queue)
     @logger = AppLogger.instance
     @app_settings = app_settings

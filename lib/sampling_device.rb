@@ -61,4 +61,28 @@ class SamplingDevice
   def get_data(sampling_frequency:)
     @board.get_data(sampling_frequency: sampling_frequency)
   end
+
+  def get_terminal_ad(channel)
+    @board.get_terminal_ad(channel)
+  end
+
+  def get_gain(channel)
+    @board.get_gain(channel)
+  end
+
+  def set_gain(channel, gain)
+    @board.set_gain(channel, gain)
+  end
+
+  def get_digital_in(channel)
+    @board.get_digital_in(channel)
+  end
+
+  def get_digital_out(channel)
+    @board.get_digital_out(channel)
+  end
+
+  def set_digital_out(channel, value)
+    @board.set_digital_out(channel, value)
+  end
 end

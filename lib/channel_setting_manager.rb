@@ -17,6 +17,11 @@ class ChannelSettingManager
     load_settings
   end
 
+  # Find a channel setting by its ID
+  def find_by_id(id)
+    @channel_settings.find { |cs| cs.channel_id == id }
+  end
+
   private
 
   def load_settings
