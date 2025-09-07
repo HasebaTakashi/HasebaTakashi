@@ -15,7 +15,31 @@ int VM2_GetData(short* pData1, short* pData2, short* pData3, short* pData4,
                 short* pData5, short* pData6, short* pData7, short* pData8,
                 short* pData9, short* pData10, short* pData11, short* pData12,
                 short* pData13, short* pData14, short* pData15, short* pData16,
-                int* plPulse) { return 0; }
+                int* plPulse) {
+
+    // Create an array of pointers for easier iteration
+    short* analog_channels[16] = {
+        pData1, pData2, pData3, pData4, pData5, pData6, pData7, pData8,
+        pData9, pData10, pData11, pData12, pData13, pData14, pData15, pData16
+    };
+
+    int num_samples = 1000; // This must match the sampling_frequency in Ruby
+
+    // Fill analog channels with a predictable pattern
+    for (int ch = 0; ch < 16; ++ch) {
+        for (int i = 0; i < num_samples; ++i) {
+            // Pattern: (channel_index * 100) + sample_index
+            analog_channels[ch][i] = (short)((ch * 100) + i);
+        }
+    }
+
+    // Fill pulse channel with a simple sequence
+    for (int i = 0; i < num_samples; ++i) {
+        plPulse[i] = i;
+    }
+
+    return 0; // Success
+}
 int VM2_GetStatus(unsigned int* pdwStatus) { *pdwStatus = 0; return 0; }
 int VM2_GetDetailErrorCode(unsigned int* pdwCode) { *pdwCode = 0; return 0; }
 int VM2_GetGain(int ch, unsigned int* pdwGain) { *pdwGain = 1; return 0; }

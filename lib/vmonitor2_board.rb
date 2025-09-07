@@ -3,14 +3,12 @@
 require 'fiddle/import'
 require_relative 'vmonitor2_driver'
 
-# VMonitor2Board: Specific Device Hardware Abstraction
-# This class wraps the VMonitor2Driver module to provide an object-oriented
-# interface to the VMonitor2 hardware. It handles the low-level details
-# of pointer manipulation for Fiddle.
+# VMonitor2Board: Specific Device Hardware Abstraction (Corrected)
+# Wraps the VMonitor2Driver, handling pointer manipulation for getting
+# 1-second data blocks.
 class VMonitor2Board
   ANALOG_CHANNELS = 16
   PULSE_CHANNELS = 1
-  TOTAL_CHANNELS = ANALOG_CHANNELS + PULSE_CHANNELS
 
   def open
     VMonitor2Driver.VM2_Open
@@ -32,50 +30,43 @@ class VMonitor2Board
     VMonitor2Driver.VM2_StopSampling
   end
 
-  # Checks if there is data in the hardware buffer.
-  # @return [Boolean] true if data exists, false otherwise.
   def check_data
     exist_ptr = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT)
     VMonitor2Driver.VM2_CheckBuffer(exist_ptr)
     exist_ptr.to_s(Fiddle::SIZEOF_INT).unpack1('i') == 1
   end
 
-  # Gets the latest data block from the hardware.
-  # @return [Array, nil] An array containing 16 analog values and 1 pulse value,
-  #                      or nil if the call fails.
-  def get_data
-    # Allocate memory for the data pointers
-    analog_data_ptr = Fiddle::Pointer.malloc(Fiddle::SIZEOF_SHORT * ANALOG_CHANNELS)
-    pulse_data_ptr = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT)
-
-    # The VM2_GetData function expects an array of pointers, but since Fiddle
-    # can't handle arrays of pointers directly in a simple way, we pass each
-    # pointer individually. We create an array of pointers to pass to the C function.
-    # The C function expects short* pData1, short* pData2, ...
-    # We can simulate this by creating pointers to each element of our allocated block.
-
-    # A simpler interpretation that often works is that the C function just wants
-    # a pointer to a contiguous block of memory. Let's try that first.
-    # The driver seems to expect 16 separate pointers, not one block.
-    # Let's create 16 pointers to our single block of memory.
-    ptrs = ANALOG_CHANNELS.times.map do |i|
-      analog_data_ptr + (i * Fiddle::SIZEOF_SHORT)
+  # Gets a 1-second data block from the hardware.
+  # @param sampling_frequency [Integer] The number of samples to retrieve per channel.
+  # @return [Hash, nil] A hash mapping channel index (0-16) to an array of samples,
+  #                     or nil if the call fails.
+  def get_data(sampling_frequency:)
+    # Allocate memory for 1s of data for each channel
+    analog_pointers = Array.new(ANALOG_CHANNELS) do
+      Fiddle::Pointer.malloc(Fiddle::SIZEOF_SHORT * sampling_frequency)
     end
+    pulse_pointer = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT * sampling_frequency)
 
-    # Call the C function
+    # Call the C function with all the pointers
     result = VMonitor2Driver.VM2_GetData(
-      *ptrs,
-      pulse_data_ptr
+      *analog_pointers,
+      pulse_pointer
     )
     return nil if result != 0 # Check for success
 
     # Unpack the data from memory
-    analog_values = analog_data_ptr.to_s(Fiddle::SIZEOF_SHORT * ANALOG_CHANNELS).unpack("s<#{ANALOG_CHANNELS}")
-    pulse_value = pulse_data_ptr.to_s(Fiddle::SIZEOF_INT).unpack1('l')
+    data_hash = {}
+    analog_pointers.each_with_index do |ptr, i|
+      data_hash[i] = ptr.to_s(Fiddle::SIZEOF_SHORT * sampling_frequency).unpack("s<#{sampling_frequency}")
+    end
 
-    analog_values + [pulse_value]
+    pulse_channel_index = ANALOG_CHANNELS # 16
+    data_hash[pulse_channel_index] = pulse_pointer.to_s(Fiddle::SIZEOF_INT * sampling_frequency).unpack("l<#{sampling_frequency}")
+
+    data_hash
   end
 
+  # --- Other methods remain the same as they deal with single values ---
   def set_gain(channel, gain)
     VMonitor2Driver.VM2_SetGain(channel, gain)
   end

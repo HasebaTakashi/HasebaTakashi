@@ -4,7 +4,7 @@ require_relative 'vmonitor2_board'
 
 # SamplingDevice: A generic device abstraction layer.
 # It instantiates a specific board driver based on device settings
-# and provides a unified interface to it.
+# and provides a unified, explicit interface to it.
 class SamplingDevice
   attr_reader :device_id, :channels
 
@@ -15,7 +15,6 @@ class SamplingDevice
 
     # In a real application, device_setting would have a 'type' field.
     # For now, we hardcode to VMonitor2Board.
-    # Note: I added 'device_type' to the JSON earlier. Let's pretend to use it.
     device_type = device_setting.respond_to?(:device_type) ? device_setting.device_type : 'VMonitor2'
 
     case device_type
@@ -31,16 +30,35 @@ class SamplingDevice
     @channels << channel
   end
 
-  # Delegate hardware-specific calls to the wrapped board instance
-  def method_missing(method_name, *args, &block)
-    if @board.respond_to?(method_name)
-      @board.send(method_name, *args, &block)
-    else
-      super
-    end
+  # --- Public Interface ---
+  # These methods provide a stable, abstract interface for controlling the device.
+
+  def open
+    @board.open
   end
 
-  def respond_to_missing?(method_name, include_private = false)
-    @board.respond_to?(method_name) || super
+  def close
+    @board.close
+  end
+
+  def start_sampling
+    @board.start_sampling
+  end
+
+  def stop_sampling
+    @board.stop_sampling
+  end
+
+  # Checks if a 1-second data block is ready.
+  def check_data
+    # This is where we map the abstract `check_data` call to the specific
+    # implementation of the board.
+    @board.check_data
+  end
+
+  # Gets a 1-second data block from the hardware.
+  # @param sampling_frequency [Integer] The number of samples to retrieve per channel.
+  def get_data(sampling_frequency:)
+    @board.get_data(sampling_frequency: sampling_frequency)
   end
 end

@@ -14,7 +14,7 @@ require 'fiddle/import'
 # ボードライブラリのラッパー
 module VMonitor2Driver
   extend Fiddle::Importer
-  dlload 'libvmonitor2.so'
+  dlload './lib/libvmonitor2.so'
 
   # デバイスオープン
   extern 'int VM2_Open()'
