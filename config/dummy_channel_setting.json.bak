@@ -1,0 +1,26 @@
+[
+  {
+    "channel_id": 1,
+    "channel_name": "Dummy-CH1",
+    "device_id": 1,
+    "channel_index": 0,
+    "sampling_frequency": 25600,
+    "gain": 1.0,
+    "max_range": 5.0,
+    "min_range": -5.0,
+    "resolution": 16,
+    "input_type": "Analog"
+  },
+  {
+    "channel_id": 2,
+    "channel_name": "Dummy-CH2",
+    "device_id": 1,
+    "channel_index": 1,
+    "sampling_frequency": 25600,
+    "gain": 1.0,
+    "max_range": 5.0,
+    "min_range": -5.0,
+    "resolution": 16,
+    "input_type": "Analog"
+  }
+]

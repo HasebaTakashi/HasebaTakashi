@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'vmonitor2_board'
+require_relative 'dummy_device'
 
 # SamplingDevice: A generic device abstraction layer.
 # It instantiates a specific board driver based on device settings
@@ -13,13 +14,14 @@ class SamplingDevice
     @device_id = device_setting.device_id
     @channels = []
 
-    # In a real application, device_setting would have a 'type' field.
-    # For now, we hardcode to VMonitor2Board.
+    # Use the 'device_type' field from settings to determine which board to use.
     device_type = device_setting.respond_to?(:device_type) ? device_setting.device_type : 'VMonitor2'
 
     case device_type
     when 'VMonitor2'
       @board = VMonitor2Board.new
+    when 'Dummy'
+      @board = DummyDevice.new
     else
       raise "Unknown device type: #{device_type}"
     end
