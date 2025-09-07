@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryNextBtn: document.getElementById('summary-next-btn'),
         diagId: document.getElementById('diag-id'),
         mode: document.getElementById('mode'),
-        learnedCount: document.getElementById('learned-count'),
-        targetCount: document.getElementById('target-count'),
         diagLevelLamp: document.getElementById('diag-level-lamp'),
         diagLevelText: document.getElementById('diag-level-text'),
         result: document.getElementById('result'),
@@ -63,9 +61,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const stored = dataStore.get(id);
             if (!stored || !stored.settings) continue;
             const s = stored.settings;
+
+            let statusIndicatorHTML = '';
+            if (s.OperationMode === 1) {
+                // Learning mode: show progress
+                statusIndicatorHTML = `<span class="learning-progress">${s.CurrentLearningNo ?? 0}/${s.LearningNo ?? '?'}</span>`;
+            } else {
+                // Diagnosis mode: show lamp
+                const level = s.DetectLevel ?? 0;
+                statusIndicatorHTML = `<span class="lamp level-${level}"></span>`;
+            }
+
             const resultText = (s.CalculationResult !== undefined && s.CalculationResult !== null) ? s.CalculationResult.toFixed(4) : 'N/A';
-            const level = s.DetectLevel ?? 0;
-            const cardHTML = `<div class="summary-card" data-id="${s.DetectID}"><div class="summary-card-header"><span class="summary-card-id">${s.DetectID}</span><span class="lamp level-${level}"></span></div><div class="summary-card-name">${s.DetectName}</div><div class="summary-card-result">${resultText}</div></div>`;
+            const cardHTML = `<div class="summary-card" data-id="${s.DetectID}"><div class="summary-card-header"><span class="summary-card-id">${s.DetectID}</span>${statusIndicatorHTML}</div><div class="summary-card-name">${s.DetectName}</div><div class="summary-card-result">${resultText}</div></div>`;
             domElements.summaryGrid.insertAdjacentHTML('beforeend', cardHTML);
         }
         domElements.summaryPrevBtn.disabled = summaryCurrentPage === 0;
@@ -78,8 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const s = stored.settings;
         domElements.diagId.textContent = s.DetectID ?? 'N/A';
         domElements.mode.textContent = (s.OperationMode !== undefined) ? (s.OperationMode === 1 ? `学習 (${s.OperationMode})` : `診断 (${s.OperationMode})`) : 'N/A';
-        domElements.learnedCount.textContent = s.CurrentLearningNo ?? 'N/A';
-        domElements.targetCount.textContent = s.LearningNo ?? 'N/A';
         const levelNum = s.DetectLevel ?? 0;
         domElements.diagLevelLamp.className = `lamp level-${levelNum}`;
         domElements.diagLevelText.textContent = `レベル ${levelNum}`;
