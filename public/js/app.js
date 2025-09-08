@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultChart = new Chart(domElements.chartCanvas.getContext('2d'), {
         type: 'line',
         data: {
-            labels: Array.from({ length: maxHistory }, (_, i) => i + 1),
             datasets: [
                 { label: '計算結果', data: [], borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 2, fill: false, tension: 0.1 },
                 { label: 'レベル1しきい値', data: [], borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
@@ -38,7 +37,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 { label: 'レベル3しきい値', data: [], borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
             ],
         },
-        options: { scales: { y: { beginAtZero: true } }, animation: false }
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        displayFormats: {
+                            minute: 'HH:mm',
+                            hour: 'HH:mm',
+                            day: 'MM/DD',
+                            month: 'YYYY/MM'
+                        },
+                        tooltipFormat: 'YYYY/MM/DD HH:mm:ss'
+                    },
+                },
+                y: {
+                    beginAtZero: true
+                }
+            },
+            animation: false
+        }
     });
 
     // --- Main Functions ---
@@ -93,11 +112,26 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.threshold1.textContent = s.Threshold1 ?? 'N/A';
         domElements.threshold2.textContent = s.Threshold2 ?? 'N/A';
         domElements.threshold3.textContent = s.Threshold3 ?? 'N/A';
-        resultChart.data.datasets[0].data = [...stored.resultsHistory];
-        const fill = (v) => v !== undefined ? Array(maxHistory).fill(v) : [];
-        resultChart.data.datasets[1].data = fill(s.Threshold1);
-        resultChart.data.datasets[2].data = fill(s.Threshold2);
-        resultChart.data.datasets[3].data = fill(s.Threshold3);
+
+        resultChart.data.datasets[0].data = stored.resultsHistory;
+
+        if (stored.resultsHistory.length > 1) {
+            const startTime = stored.resultsHistory[0].x;
+            const endTime = stored.resultsHistory[stored.resultsHistory.length - 1].x;
+
+            const createThresholdLine = (value) => {
+                if (value === undefined || value === null) return [];
+                return [{x: startTime, y: value}, {x: endTime, y: value}];
+            };
+            resultChart.data.datasets[1].data = createThresholdLine(s.Threshold1);
+            resultChart.data.datasets[2].data = createThresholdLine(s.Threshold2);
+            resultChart.data.datasets[3].data = createThresholdLine(s.Threshold3);
+        } else {
+            resultChart.data.datasets[1].data = [];
+            resultChart.data.datasets[2].data = [];
+            resultChart.data.datasets[3].data = [];
+        }
+
         resultChart.update('none');
     };
 
@@ -135,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const stored = dataStore.get(diagId);
             if (stored && stored.settings) {
                 Object.assign(stored.settings, realtimeData);
-                stored.resultsHistory.push(realtimeData.CalculationResult);
+                stored.resultsHistory.push({ x: new Date(), y: realtimeData.CalculationResult });
                 if (stored.resultsHistory.length > maxHistory) stored.resultsHistory.shift();
             }
         }
@@ -160,9 +194,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load state, set up listeners, and connect WebSocket
         try {
             const savedStore = sessionStorage.getItem('dataStore');
-            if (savedStore) dataStore = new Map(JSON.parse(savedStore));
+            if (savedStore) {
+                const parsed = JSON.parse(savedStore);
+                // Manually revive Date objects from ISO strings
+                for (const entry of parsed) {
+                    const value = entry[1];
+                    if (value.resultsHistory) {
+                        value.resultsHistory = value.resultsHistory.map(item => ({
+                            x: new Date(item.x),
+                            y: item.y
+                        }));
+                    }
+                }
+                dataStore = new Map(parsed);
+            }
             summaryCurrentPage = parseInt(sessionStorage.getItem('summaryCurrentPage') || '0', 10);
-        } catch (e) { dataStore = new Map(); }
+        } catch (e) {
+            console.error("Failed to load state from session storage", e);
+            dataStore = new Map();
+        }
 
         // Initial UI Render from potentially stale state
         const sortedIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
