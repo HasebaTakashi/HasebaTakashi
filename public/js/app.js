@@ -136,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processSettingsData = (csvString) => {
-        const newStore = new Map();
         const allValues = csvString.split(',');
         if (allValues.length < settingFieldNames.length) return;
 
@@ -149,13 +148,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings[name] = (name === "DetectName") ? val : parseFloat(val);
             });
             const diagId = settings.DetectID.toString();
-            const existingEntry = dataStore.get(diagId) || { resultsHistory: [] };
-            newStore.set(diagId, {
-                settings: settings,
-                resultsHistory: existingEntry.resultsHistory
-            });
+
+            // 既存のエントリを取得。存在しない場合は新規作成。
+            const existingEntry = dataStore.get(diagId) || { settings: {}, resultsHistory: [] };
+
+            // 履歴は維持し、設定データのみを更新
+            Object.assign(existingEntry.settings, settings);
+
+            // `dataStore`を更新
+            dataStore.set(diagId, existingEntry);
         }
-        dataStore = newStore; // Replace the old store with the new one
     };
 
     const processRealtimeData = (csvString) => {
@@ -167,10 +169,17 @@ document.addEventListener('DOMContentLoaded', () => {
             realtimeFieldNames.forEach((name, j) => { realtimeData[name] = parseFloat(realtimeArray[j]); });
             const diagId = realtimeData.DetectID.toString();
             const stored = dataStore.get(diagId);
+
             if (stored && stored.settings) {
+                const previousMode = stored.settings.OperationMode;
                 Object.assign(stored.settings, realtimeData);
                 stored.resultsHistory.push({ x: new Date(), y: realtimeData.CalculationResult });
                 if (stored.resultsHistory.length > maxHistory) stored.resultsHistory.shift();
+
+                if (previousMode === 1 && realtimeData.OperationMode === 0) {
+                    console.log(`Learning finished for ID ${diagId}. Requesting updated settings.`);
+                    fetch('/api/request_settings', { method: 'POST' });
+                }
             }
         }
     };
@@ -248,12 +257,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.textContent = id;
                     domElements.diagIdSelector.appendChild(option);
                 });
-                if(dataStore.has(currentVal)) domElements.diagIdSelector.value = currentVal;
+                if(dataStore.has(currentVal)) {
+                    domElements.diagIdSelector.value = currentVal;
+                }
+                renderSummaryGrid();
+                updateDisplay(domElements.diagIdSelector.value);
             } else if (message.type === 'detect_result') {
                 processRealtimeData(message.data);
+                renderSummaryGrid();
+                updateDisplay(domElements.diagIdSelector.value);
             }
-            renderSummaryGrid();
-            updateDisplay(domElements.diagIdSelector.value);
             saveState();
         };
     };
