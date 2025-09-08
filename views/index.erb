@@ -15,6 +15,7 @@
         .chart-area-container { max-width: 1200px; margin: 2em auto; }
         .header-link { float: right; font-size: 0.9em; margin-top: 1.5em; text-decoration: none; color: #007bff; }
         h1 { color: #111; }
+        #app-logo { max-height: 80px; margin-bottom: 1em; }
         hr { border: none; border-top: 1px solid #ddd; margin: 1em 0; }
         .summary-section { margin-bottom: 2em; }
         .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; }
@@ -45,6 +46,11 @@
         .selector-container label { font-weight: bold; }
         .selector-container select { padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; }
         #data-display {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+        .info-card-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1em;
@@ -82,11 +88,13 @@
         .edit-btn.cancel { color: #dc3545; font-size: 1.2em; }
     </style>
     <script src="/js/chart.min.js"></script>
+    <script src="/js/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="/js/chartjs-plugin-annotation.min.js"></script>
 </head>
 <body>
     <div class="main-container">
         <a href="/settings_editor" class="header-link">設定編集</a>
-        <h1>MQTT Real-time Data</h1>
+        <img src="/app_logo.jpg" alt="App Logo" id="app-logo">
         <div id="status">Connecting to server...</div>
         <hr>
         <div class="summary-section">
@@ -105,13 +113,19 @@
             <select id="diag-id-selector"></select>
         </div>
         <div id="data-display">
-            <div class="info-card"><div class="label">診断ID</div><div id="diag-id" class="value">N/A</div></div>
-            <div class="info-card toggle-mode-card"><div class="label">モード</div><div id="mode" class="value">N/A</div></div>
-            <div class="info-card"><div class="label">診断レベル</div><div class="value-large"><span id="diag-level-lamp" class="lamp"></span><span id="diag-level-text" class="value">N/A</span></div></div>
-            <div class="info-card"><div class="label">計算結果</div><div id="result" class="value">N/A</div></div>
-            <div class="info-card editable-card" data-property="Threshold1"><div class="label">レベル1しきい値</div><div id="threshold-1" class="value">N/A</div></div>
-            <div class="info-card editable-card" data-property="Threshold2"><div class="label">レベル2しきい値</div><div id="threshold-2" class="value">N/A</div></div>
-            <div class="info-card editable-card" data-property="Threshold3"><div class="label">レベル3しきい値</div><div id="threshold-3" class="value">N/A</div></div>
+            <div class="info-card-row">
+                <!-- Non-interactive cards -->
+                <div class="info-card"><div class="label">診断ID</div><div id="diag-id" class="value">N/A</div></div>
+                <div class="info-card"><div class="label">診断レベル</div><div class="value-large"><span id="diag-level-lamp" class="lamp"></span><span id="diag-level-text" class="value">N/A</span></div></div>
+                <div class="info-card"><div class="label">計算結果</div><div id="result" class="value">N/A</div></div>
+            </div>
+            <div class="info-card-row">
+                <!-- Interactive cards -->
+                <div class="info-card toggle-mode-card"><div class="label">モード</div><div id="mode" class="value">N/A</div></div>
+                <div class="info-card editable-card" data-property="Threshold1"><div class="label">レベル1しきい値</div><div id="threshold-1" class="value">N/A</div></div>
+                <div class="info-card editable-card" data-property="Threshold2"><div class="label">レベル2しきい値</div><div id="threshold-2" class="value">N/A</div></div>
+                <div class="info-card editable-card" data-property="Threshold3"><div class="label">レベル3しきい値</div><div id="threshold-3" class="value">N/A</div></div>
+            </div>
         </div>
         <div class="chart-container">
             <h2>計算結果 トレンドグラフ</h2>

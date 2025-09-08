@@ -27,18 +27,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const realtimeFieldNames = ["DetectID", "OperationMode", "CurrentLearningNo", "DetectLevel", "CalculationResult"];
 
     // --- Chart.js Initialization ---
+    // The annotation plugin is registered automatically via the CDN script.
     const resultChart = new Chart(domElements.chartCanvas.getContext('2d'), {
         type: 'line',
         data: {
-            labels: Array.from({ length: maxHistory }, (_, i) => i + 1),
             datasets: [
                 { label: '計算結果', data: [], borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 2, fill: false, tension: 0.1 },
-                { label: 'レベル1しきい値', data: [], borderColor: 'rgba(255, 206, 86, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
-                { label: 'レベル2しきい値', data: [], borderColor: 'rgba(255, 159, 64, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
-                { label: 'レベル3しきい値', data: [], borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, borderDash: [5, 5], fill: false, pointRadius: 0 },
             ],
         },
-        options: { scales: { y: { beginAtZero: true } }, animation: { duration: 0 } }
+        options: {
+            scales: {
+                y: { beginAtZero: true },
+                x: {
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            hour: 'HH:mm',
+                            minute: 'HH:mm',
+                            second: 'HH:mm:ss'
+                        }
+                    }
+                }
+            },
+            animation: { duration: 0 },
+            plugins: {
+                annotation: {
+                    annotations: {
+                        // Annotations will be added dynamically here
+                    }
+                }
+            }
+        }
     });
 
     // --- Main Functions ---
@@ -94,10 +113,36 @@ document.addEventListener('DOMContentLoaded', () => {
         domElements.threshold2.textContent = s.Threshold2 ?? 'N/A';
         domElements.threshold3.textContent = s.Threshold3 ?? 'N/A';
         resultChart.data.datasets[0].data = stored.resultsHistory;
-        const fill = (v) => v !== undefined ? Array(maxHistory).fill(v) : [];
-        resultChart.data.datasets[1].data = fill(s.Threshold1);
-        resultChart.data.datasets[2].data = fill(s.Threshold2);
-        resultChart.data.datasets[3].data = fill(s.Threshold3);
+
+        const createAnnotation = (value, color, label) => {
+            if (value === undefined || value === null) return null;
+            return {
+                type: 'line',
+                yMin: value,
+                yMax: value,
+                borderColor: color,
+                borderWidth: 2,
+                borderDash: [6, 6],
+                label: {
+                    content: label,
+                    enabled: true,
+                    position: 'end',
+                    backgroundColor: 'rgba(0,0,0,0.6)'
+                }
+            };
+        };
+
+        const annotations = {
+            threshold1: createAnnotation(s.Threshold1, 'rgba(255, 206, 86, 1)', 'レベル1'),
+            threshold2: createAnnotation(s.Threshold2, 'rgba(255, 159, 64, 1)', 'レベル2'),
+            threshold3: createAnnotation(s.Threshold3, 'rgba(255, 99, 132, 1)', 'レベル3'),
+        };
+
+        // Filter out null annotations
+        resultChart.options.plugins.annotation.annotations = Object.fromEntries(
+            Object.entries(annotations).filter(([_, v]) => v != null)
+        );
+
         resultChart.update('none');
     };
 
@@ -135,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const stored = dataStore.get(diagId);
             if (stored && stored.settings) {
                 Object.assign(stored.settings, realtimeData);
-                stored.resultsHistory.push(realtimeData.CalculationResult);
+                stored.resultsHistory.push({ x: new Date(), y: realtimeData.CalculationResult });
                 if (stored.resultsHistory.length > maxHistory) stored.resultsHistory.shift();
             }
         }
@@ -143,31 +188,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveSettingsToMqtt = async () => {
         const settingsToSave = {};
-        const sortedIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
-        for(const id of sortedIds) {
-            const data = dataStore.get(id);
+        for (const data of dataStore.values()) {
             if (data && data.settings) {
-                const key = data.settings.DetectName || `Detect${id}`;
+                const key = data.settings.DetectName || `Detect${data.settings.DetectID}`;
                 settingsToSave[key] = data.settings;
             }
         }
         try {
             const res = await fetch('/api/publish_settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settingsToSave) });
             if (!res.ok) throw new Error('Failed to publish settings');
-            // After successfully publishing, request the new canonical state
             fetch('/api/request_settings', { method: 'POST' });
         } catch (e) { console.error("Failed to publish settings", e); }
     };
 
     const init = () => {
-        // Load state, set up listeners, and connect WebSocket
         try {
             const savedStore = sessionStorage.getItem('dataStore');
-            if (savedStore) dataStore = new Map(JSON.parse(savedStore));
+            if (savedStore) {
+                const parsed = JSON.parse(savedStore);
+                for (const entry of parsed) {
+                    const value = entry[1];
+                    if (value.resultsHistory) {
+                        value.resultsHistory = value.resultsHistory.map(item => ({
+                            x: new Date(item.x),
+                            y: item.y
+                        }));
+                    }
+                }
+                dataStore = new Map(parsed);
+            }
             summaryCurrentPage = parseInt(sessionStorage.getItem('summaryCurrentPage') || '0', 10);
-        } catch (e) { dataStore = new Map(); }
+        } catch (e) {
+            console.error("Failed to load state from session storage", e);
+            dataStore = new Map();
+        }
 
-        // Initial UI Render from potentially stale state
         const sortedIds = Array.from(dataStore.keys()).sort((a, b) => a - b);
         domElements.diagIdSelector.innerHTML = '';
         sortedIds.forEach(key => {
@@ -183,10 +238,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDisplay(domElements.diagIdSelector.value);
         addEventListeners();
 
+        domElements.status.textContent = 'WebSocket: Connecting...';
         const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/socket`);
-        ws.onopen = () => { domElements.status.textContent = 'Connected'; fetch('/api/request_settings', { method: 'POST' }); };
-        ws.onclose = () => domElements.status.textContent = 'Disconnected';
-        ws.onerror = () => domElements.status.textContent = 'Connection Error';
+        ws.onopen = () => { domElements.status.textContent = 'WebSocket: Connected'; fetch('/api/request_settings', { method: 'POST' }); };
+        ws.onclose = () => domElements.status.textContent = 'WebSocket: Disconnected';
+        ws.onerror = () => domElements.status.textContent = 'WebSocket: Connection Error';
         ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (message.type === 'settings_data') {
