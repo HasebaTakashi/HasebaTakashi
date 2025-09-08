@@ -1,89 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyze Setting</title>
-    <link rel="stylesheet" href="/css/settings.css">
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1 class="title">Edge Unit Setting</h1>
-            <div class="version-info">
-                <span>ver.<%= @version %></span>
-                <span>powered by <span class="ntn-blue">NTN</span></span>
-            </div>
-            <h2 class="device-name">DeviceName : <%= @device_name %></h2>
-        </header>
-
-        <nav class="main-nav">
-            <a href="/samplingappsetting">Sampling App Setting</a>
-            <a href="/devicesetting">Device Setting</a>
-            <a href="/channelsetting">Channel Setting</a>
-            <a href="/analyzeappsetting">Analyze App Setting</a>
-            <a href="/analyzesetting">Analyze Setting</a>
-            <a href="/reboot">Reboot</a>
-            <a href="/">HOME</a>
-        </nav>
-
-        <main class="content">
-            <section class="settings-card">
-                <h3>Analyze Setting</h3>
-                <form action="editanalyze" method="POST">
-                    <div class="table-container">
-                        <table class="settings-table">
-                            <thead>
-                                <tr>
-                                    <th>AnalyzeID</th>
-                                    <th>AnalyzeName</th>
-                                    <th>DataChannelID</th>
-                                    <th>AnalyzeType</th>
-                                    <th>AnalyzePath</th>
-                                    <th>AnalyzeCommand</th>
-                                    <th>AnalyzeArguments</th>
-                                    <th>EnableAnalyze</th>
-                                    <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% @analyze_settings.each do |setting| %>
-                                    <tr>
-                                        <td data-label="AnalyzeID"><%= setting.analyze_id %></td>
-                                        <td data-label="AnalyzeName"><input type="text" name="analyzename<%= setting.analyze_id %>" value="<%= setting.analyze_name %>"></td>
-                                        <td data-label="DataChannelID"><input type="number" name="datachannelid<%= setting.analyze_id %>" value="<%= setting.data_channel_id %>" min="0" max="99"></td>
-                                        <td data-label="AnalyzeType"><input type="text" name="analyzetype<%= setting.analyze_id %>" value="<%= setting.analyze_type %>"></td>
-                                        <td data-label="AnalyzePath"><input type="text" name="analyzepath<%= setting.analyze_id %>" value="<%= setting.analyze_path %>"></td>
-                                        <td data-label="AnalyzeCommand"><input type="text" name="analyzecommand<%= setting.analyze_id %>" value="<%= setting.analyze_command %>"></td>
-                                        <td data-label="AnalyzeArguments"><input type="text" name="analyzearguments<%= setting.analyze_id %>" value="<%= setting.analyze_arguments %>"></td>
-                                        <td data-label="EnableAnalyze">
-                                            <div class="radio-group">
-                                                <label>
-                                                    <input type="radio" name="analyzeenable<%= setting.analyze_id %>" value="1" <%= 'checked' if setting.enable_analyze == 1 %>>
-                                                    Enable
-                                                </label>
-                                                <label>
-                                                    <input type="radio" name="analyzeenable<%= setting.analyze_id %>" value="0" <%= 'checked' if setting.enable_analyze == 0 %>>
-                                                    Disable
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td data-label="Delete">
-                                            <a href="/deleteanalyze/<%= setting.analyze_id %>" class="btn-delete">Delete Analyze</a>
-                                        </td>
-                                    </tr>
-                                <% end %>
-                            </tbody>
-                        </table>
-                    </div>
-                    <button type="submit" class="btn">Edit</button>
-                </form>
-                <a href="/addanalyze" class="btn btn-add">Add Analyzer</a>
-            </section>
-        </main>
-        <footer class="footer">
-            <a href="/">HOME</a>
-        </footer>
-    </div>
-</body>
-</html>
+<section class="settings-card">
+    <h3>Analyze Setting</h3>
+    <form action="editanalyze" method="POST">
+        <div class="table-container">
+            <table class="settings-table">
+                <thead>
+                    <tr>
+                        <th>AnalyzeID</th>
+                        <th>AnalyzeName</th>
+                        <th>DataChannelID</th>
+                        <th>AnalyzeType</th>
+                        <th>AnalyzePath</th>
+                        <th>AnalyzeCommand</th>
+                        <th>AnalyzeArguments</th>
+                        <th>EnableAnalyze</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% @analyze_settings.each do |setting| %>
+                        <tr>
+                            <td data-label="AnalyzeID"><%= setting.analyze_id %></td>
+                            <td data-label="AnalyzeName"><input type="text" name="analyzename<%= setting.analyze_id %>" value="<%= setting.analyze_name %>"></td>
+                            <td data-label="DataChannelID"><input type="number" name="datachannelid<%= setting.analyze_id %>" value="<%= setting.data_channel_id %>" min="0" max="99"></td>
+                            <td data-label="AnalyzeType"><input type="text" name="analyzetype<%= setting.analyze_id %>" value="<%= setting.analyze_type %>"></td>
+                            <td data-label="AnalyzePath"><input type="text" name="analyzepath<%= setting.analyze_id %>" value="<%= setting.analyze_path %>"></td>
+                            <td data-label="AnalyzeCommand"><input type="text" name="analyzecommand<%= setting.analyze_id %>" value="<%= setting.analyze_command %>"></td>
+                            <td data-label="AnalyzeArguments"><input type="text" name="analyzearguments<%= setting.analyze_id %>" value="<%= setting.analyze_arguments %>"></td>
+                            <td data-label="EnableAnalyze">
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" name="analyzeenable<%= setting.analyze_id %>" value="1" <%= 'checked' if setting.enable_analyze == 1 %>>
+                                        Enable
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="analyzeenable<%= setting.analyze_id %>" value="0" <%= 'checked' if setting.enable_analyze == 0 %>>
+                                        Disable
+                                    </label>
+                                </div>
+                            </td>
+                            <td data-label="Delete">
+                                <a href="/deleteanalyze/<%= setting.analyze_id %>" class="btn-delete">Delete Analyze</a>
+                            </td>
+                        </tr>
+                    <% end %>
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn">Edit</button>
+    </form>
+    <a href="/addanalyze" class="btn btn-add">Add Analyzer</a>
+</section>

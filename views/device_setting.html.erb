@@ -1,74 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Setting</title>
-    <link rel="stylesheet" href="/css/settings.css">
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1 class="title">Edge Unit Setting</h1>
-            <div class="version-info">
-                <span>ver.<%= @version %></span>
-                <span>powered by <span class="ntn-blue">NTN</span></span>
-            </div>
-            <h2 class="device-name">DeviceName : <%= @device_name %></h2>
-        </header>
-
-        <nav class="main-nav">
-            <a href="/samplingappsetting">Sampling App Setting</a>
-            <a href="/devicesetting">Device Setting</a>
-            <a href="/channelsetting">Channel Setting</a>
-            <a href="/analyzeappsetting">Analyze App Setting</a>
-            <a href="/analyzesetting">Analyze Setting</a>
-            <a href="/reboot">Reboot</a>
-            <a href="/">HOME</a>
-        </nav>
-
-        <main class="content">
-            <section class="settings-card">
-                <h3>Device Setting</h3>
-                <form action="editdevice" method="POST">
-                    <table class="settings-table">
-                        <thead>
-                            <tr>
-                                <th>DeviceID</th>
-                                <th>DeviceName</th>
-                                <th>ChannelNo</th>
-                                <th>Enable</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% @device_settings.each do |setting| %>
-                                <tr>
-                                    <td data-label="DeviceID"><%= setting.device_id %></td>
-                                    <td data-label="DeviceName"><%= setting.device_name %></td>
-                                    <td data-label="ChannelNo"><%= setting.channel_no %></td>
-                                    <td data-label="Enable">
-                                        <div class="radio-group">
-                                            <label>
-                                                <input type="radio" name="deviceenable<%= setting.device_id %>" value="1" <%= 'checked' if setting.enable_device == 1 %>>
-                                                Enable
-                                            </label>
-                                            <label>
-                                                <input type="radio" name="deviceenable<%= setting.device_id %>" value="0" <%= 'checked' if setting.enable_device == 0 %>>
-                                                Disable
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <% end %>
-                        </tbody>
-                    </table>
-                    <button type="submit" class="btn">Edit</button>
-                </form>
-            </section>
-        </main>
-        <footer class="footer">
-            <a href="/">HOME</a>
-        </footer>
-    </div>
-</body>
-</html>
+<section class="settings-card">
+    <h3>Device Setting</h3>
+    <form action="editdevice" method="POST">
+        <table class="settings-table">
+            <thead>
+                <tr>
+                    <th>DeviceID</th>
+                    <th>DeviceName</th>
+                    <th>ChannelNo</th>
+                    <th>Enable</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% @device_settings.each do |setting| %>
+                    <tr>
+                        <td data-label="DeviceID"><%= setting.device_id %></td>
+                        <td data-label="DeviceName"><%= setting.device_name %></td>
+                        <td data-label="ChannelNo"><%= setting.channel_no %></td>
+                        <td data-label="Enable">
+                            <div class="radio-group">
+                                <label>
+                                    <input type="radio" name="deviceenable<%= setting.device_id %>" value="1" <%= 'checked' if setting.enable_device == 1 %>>
+                                    Enable
+                                </label>
+                                <label>
+                                    <input type="radio" name="deviceenable<%= setting.device_id %>" value="0" <%= 'checked' if setting.enable_device == 0 %>>
+                                    Disable
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                <% end %>
+            </tbody>
+        </table>
+        <button type="submit" class="btn">Edit</button>
+    </form>
+</section>

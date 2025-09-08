@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Unit Setting</title>
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Edge Unit Setting</h1>
+            <div class="version-info">
+                <span>ver.<%= @version %></span>
+                <span>powered by <span class="ntn-blue">NTN</span></span>
+            </div>
+            <h2 class="device-name">DeviceName : <%= @device_name %></h2>
+        </header>
+
+        <nav class="main-nav">
+            <a href="/samplingappsetting">Sampling App Setting</a>
+            <a href="/devicesetting">Device Setting</a>
+            <a href="/channelsetting">Channel Setting</a>
+            <a href="/analyzeappsetting">Analyze App Setting</a>
+            <a href="/analyzesetting">Analyze Setting</a>
+            <a href="/reboot">Reboot</a>
+            <a href="/">HOME</a>
+        </nav>
+
+        <main class="content">
+            <%= yield %>
+        </main>
+
+        <footer class="footer">
+            <a href="/">HOME</a>
+        </footer>
+    </div>
+</body>
+</html>
