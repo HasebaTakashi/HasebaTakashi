@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampling App Setting</title>
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Edge Unit Setting</h1>
+            <div class="version-info">
+                <span>ver.<%= @version %></span>
+                <span>powered by <span class="ntn-blue">NTN</span></span>
+            </div>
+            <h2 class="device-name">DeviceName : <%= @device_name %></h2>
+        </header>
+
+        <nav class="main-nav">
+            <a href="/samplingappsetting">Sampling App Setting</a>
+            <a href="/devicesetting">Device Setting</a>
+            <a href="/channelsetting">Channel Setting</a>
+            <a href="/analyzeappsetting">Analyze App Setting</a>
+            <a href="/analyzesetting">Analyze Setting</a>
+            <a href="/reboot">Reboot</a>
+            <a href="/">HOME</a>
+        </nav>
+
+        <main class="content">
+            <section class="settings-card">
+                <h3>Sampling App Setting</h3>
+                <form action="editsamplingapp" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="bufferno">BufferNo</label>
+                            <input type="number" id="bufferno" name="bufferno" value="<%= @sampling_app_setting.buffer_no %>" min="1" max="180">
+                        </div>
+
+                        <% @sampling_app_setting.buffer_no.times do |i| %>
+                            <div class="form-group">
+                                <label for="buffer<%= i + 1 %>size">Buffer<%= (i + 1) %>Size</label>
+                                <input type="number" id="buffer<%= i + 1 %>size" name="buffer<%= i + 1 %>size" value="<%= @sampling_app_setting.buffer_size_hash[i + 1] %>" min="1" max="1800">
+                            </div>
+                        <% end %>
+
+                        <div class="form-group">
+                            <label for="serverip">ServerIP</label>
+                            <input type="text" id="serverip" name="serverip" value="<%= @sampling_app_setting.server_ip %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="serverport">ServerPort</label>
+                            <input type="number" id="serverport" name="serverport" value="<%= @sampling_app_setting.server_port %>" min="10000" max="65536">
+                        </div>
+                        <div class="form-group">
+                            <label for="servertype">ServerType</label>
+                            <input type="number" id="servertype" name="servertype" value="<%= @sampling_app_setting.server_type %>" min="1" max="2">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Edit</button>
+                </form>
+            </section>
+        </main>
+        <footer class="footer">
+            <a href="/">HOME</a>
+        </footer>
+    </div>
+</body>
+</html>

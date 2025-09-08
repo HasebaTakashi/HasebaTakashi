@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channel Setting</title>
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Edge Unit Setting</h1>
+            <div class="version-info">
+                <span>ver.<%= @version %></span>
+                <span>powered by <span class="ntn-blue">NTN</span></span>
+            </div>
+            <h2 class="device-name">DeviceName : <%= @device_name %></h2>
+        </header>
+
+        <nav class="main-nav">
+            <a href="/samplingappsetting">Sampling App Setting</a>
+            <a href="/devicesetting">Device Setting</a>
+            <a href="/channelsetting">Channel Setting</a>
+            <a href="/analyzeappsetting">Analyze App Setting</a>
+            <a href="/analyzesetting">Analyze Setting</a>
+            <a href="/reboot">Reboot</a>
+            <a href="/">HOME</a>
+        </nav>
+
+        <main class="content">
+            <section class="settings-card">
+                <h3>Channel Setting</h3>
+                <form action="editchannel" method="POST">
+                    <div class="table-container">
+                        <table class="settings-table">
+                            <thead>
+                                <tr>
+                                    <th>ChannelID</th>
+                                    <th>ChannelName</th>
+                                    <th>DeviceID</th>
+                                    <th>ChannelIndex</th>
+                                    <th>SamplingFrequency</th>
+                                    <th>Gain</th>
+                                    <th>MaxRange</th>
+                                    <th>MinRange</th>
+                                    <th>Resolution</th>
+                                    <th>InputType</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% @channel_settings.each do |setting| %>
+                                    <tr>
+                                        <td data-label="ChannelID"><%= setting.channel_id %></td>
+                                        <td data-label="ChannelName"><input type="text" name="channelname<%= setting.channel_id %>" value="<%= setting.channel_name %>"></td>
+                                        <td data-label="DeviceID"><input type="number" name="channeldeviceid<%= setting.channel_id %>" value="<%= setting.device_id %>" min="0" max="99"></td>
+                                        <td data-label="ChannelIndex"><input type="number" name="channelindex<%= setting.channel_id %>" value="<%= setting.ch_index %>" min="0" max="99"></td>
+                                        <td data-label="SamplingFrequency"><input type="number" name="channelsamplingfrequency<%= setting.channel_id %>" value="<%= setting.sampling_freq %>" min="1" max="25600"></td>
+                                        <td data-label="ChannelGain"><input type="number" name="channelgain<%= setting.channel_id %>" value="<%= setting.gain %>" min="1" max="10"></td>
+                                        <td data-label="MaxRange"><input type="number" name="channelmaxrange<%= setting.channel_id %>" value="<%= setting.max_range %>" min="-100.0" max="100.0" step="0.1"></td>
+                                        <td data-label="MinRange"><input type="number" name="channelminrange<%= setting.channel_id %>" value="<%= setting.min_range %>" min="-100.0" max="100.0" step="0.1"></td>
+                                        <td data-label="Resolution"><input type="number" name="channelresolution<%= setting.channel_id %>" value="<%= setting.resolution %>" min="8" max="32"></td>
+                                        <td data-label="InputType"><input type="number" name="inputtype<%= setting.channel_id %>" value="<%= setting.input_type %>" min="0" max="3"></td>
+                                    </tr>
+                                <% end %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="submit" class="btn">Edit</button>
+                </form>
+            </section>
+        </main>
+        <footer class="footer">
+            <a href="/">HOME</a>
+        </footer>
+    </div>
+</body>
+</html>

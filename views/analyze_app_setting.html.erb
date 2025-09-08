@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyze App Setting</title>
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Edge Unit Setting</h1>
+            <div class="version-info">
+                <span>ver.<%= @version %></span>
+                <span>powered by <span class="ntn-blue">NTN</span></span>
+            </div>
+            <h2 class="device-name">DeviceName : <%= @device_name %></h2>
+        </header>
+
+        <nav class="main-nav">
+            <a href="/samplingappsetting">Sampling App Setting</a>
+            <a href="/devicesetting">Device Setting</a>
+            <a href="/channelsetting">Channel Setting</a>
+            <a href="/analyzeappsetting">Analyze App Setting</a>
+            <a href="/analyzesetting">Analyze Setting</a>
+            <a href="/reboot">Reboot</a>
+            <a href="/">HOME</a>
+        </nav>
+
+        <main class="content">
+            <section class="settings-card">
+                <h3>Analyze App Setting</h3>
+                <form action="editanalyzeapp" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="samplingserverip">SamplingServerIP</label>
+                            <input type="text" id="samplingserverip" name="samplingserverip" value="<%= @analyze_app_setting.sampling_server_ip %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="samplingserverport">SamplingServerPort</label>
+                            <input type="number" id="samplingserverport" name="samplingserverport" value="<%= @analyze_app_setting.sampling_server_port %>" min="10000" max="65536">
+                        </div>
+                        <div class="form-group">
+                            <label for="mqtthostip">MqttHostIP</label>
+                            <input type="text" id="mqtthostip" name="mqtthostip" value="<%= @analyze_app_setting.mqtt_host_ip %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="mqttport">MqttPort</label>
+                            <input type="number" id="mqttport" name="mqttport" value="<%= @analyze_app_setting.mqtt_port %>" min="1" max="65536">
+                        </div>
+                        <div class="form-group">
+                            <label for="mqttsendtopic">MqttSendTopic</label>
+                            <input type="text" id="mqttsendtopic" name="mqttsendtopic" value="<%= @analyze_app_setting.mqtt_send_topic %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="triggertype">TriggerType</label>
+                            <input type="number" id="triggertype" name="triggertype" value="<%= @analyze_app_setting.trigger_type %>" min="0" max="2">
+                        </div>
+                        <div class="form-group">
+                            <label for="measurementsec">MeasurementSec</label>
+                            <input type="number" id="measurementsec" name="measurementsec" value="<%= @analyze_app_setting.measurement_sec %>" min="1" max="180">
+                        </div>
+                        <div class="form-group">
+                            <label for="measurementintervalsec">MeasurementIntervalSec</label>
+                            <input type="number" id="measurementintervalsec" name="measurementintervalsec" value="<%= @analyze_app_setting.measurement_interval_sec %>" min="0" max="65536">
+                        </div>
+                        <div class="form-group">
+                            <label for="pretriggersec">PreTriggerSec</label>
+                            <input type="number" id="pretriggersec" name="pretriggersec" value="<%= @analyze_app_setting.pretrigger_sec %>" min="0" max="180">
+                        </div>
+                        <div class="form-group">
+                            <label for="triggerinputdeviceid">TriggerInputDeviceID</label>
+                            <input type="number" id="triggerinputdeviceid" name="triggerinputdeviceid" value="<%= @analyze_app_setting.trigger_device_id %>" min="0" max="99">
+                        </div>
+                        <div class="form-group">
+                            <label for="triggerinputchannelid">TriggerInputChannelID</label>
+                            <input type="number" id="triggerinputchannelid" name="triggerinputchannelid" value="<%= @analyze_app_setting.trigger_channel_id %>" min="0" max="99">
+                        </div>
+                        <div class="form-group">
+                            <label>OutputData</label>
+                            <div class="radio-group">
+                                <label>
+                                    <input type="radio" name="isoutputdata" value="1" <%= 'checked' if @analyze_app_setting.is_output_data == 1 %>>
+                                    Enable
+                                </label>
+                                <label>
+                                    <input type="radio" name="isoutputdata" value="0" <%= 'checked' if @analyze_app_setting.is_output_data == 0 %>>
+                                    Disable
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxoutputfileno">MaxOutputFileNo</label>
+                            <input type="number" id="maxoutputfileno" name="maxoutputfileno" value="<%= @analyze_app_setting.max_output_file_no %>" min="1" max="200">
+                        </div>
+                        <div class="form-group">
+                            <label for="outputdatasec">OutputDataSec</label>
+                            <input type="number" id="outputdatasec" name="outputdatasec" value="<%= @analyze_app_setting.output_data_sec %>" min="1" max="3600">
+                        </div>
+                        <div class="form-group">
+                            <label for="outputdatapath">OutputDataPath</label>
+                            <input type="text" id="outputdatapath" name="outputdatapath" value="<%= @analyze_app_setting.output_data_path %>">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Edit</button>
+                </form>
+            </section>
+        </main>
+        <footer class="footer">
+            <a href="/">HOME</a>
+        </footer>
+    </div>
+</body>
+</html>
