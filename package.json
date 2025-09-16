@@ -4,13 +4,11 @@
   "description": "A web application with MQTT backend.",
   "private": true,
   "workspaces": [
-    "broker",
     "backend",
     "webapp"
   ],
   "scripts": {
     "start": "run-p start:*",
-    "start:broker": "npm start --workspace=broker",
     "start:backend": "npm start --workspace=backend",
     "start:webapp": "npm start --workspace=webapp",
     "install:all": "npm install -ws"
