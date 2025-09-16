@@ -1,0 +1,24 @@
+{
+  "name": "mqtt-web-app",
+  "version": "1.0.0",
+  "description": "A web application with MQTT backend.",
+  "private": true,
+  "workspaces": [
+    "broker",
+    "backend",
+    "webapp"
+  ],
+  "scripts": {
+    "start": "run-p start:*",
+    "start:broker": "npm start --workspace=broker",
+    "start:backend": "npm start --workspace=backend",
+    "start:webapp": "npm start --workspace=webapp",
+    "install:all": "npm install -ws"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
