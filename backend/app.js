@@ -30,9 +30,11 @@ client.on('connect', () => {
     if (err) console.error('Failed to subscribe to Change', err);
     else console.log('Subscribed to Change');
   });
-  client.subscribe('RequestSetting', (err) => {
-    if(err) console.error('Failed to subscribe to RequestSetting', err);
-    else console.log('Subscribed to RequestSetting');
+
+  // On connect, publish the current settings as a retained message
+  client.publish('Setting', JSON.stringify(thresholds), { retain: true }, (err) => {
+    if (err) console.error('Failed to publish retained settings', err);
+    else console.log('Initial settings published as retained message.');
   });
 });
 
@@ -44,8 +46,6 @@ client.on('message', (topic, message) => {
     handleTestData(messageStr);
   } else if (topic === 'Change') {
     handleChange(messageStr);
-  } else if (topic === 'RequestSetting') {
-    handleRequestSetting();
   }
 });
 
@@ -91,17 +91,10 @@ function handleChange(messageStr) {
       console.error('Failed to write updated thresholds to file', err);
     } else {
       console.log('Thresholds file updated successfully.');
-      // Publish the new settings after change
-      client.publish('Setting', JSON.stringify(thresholds));
+      // Publish the new settings as a retained message
+      client.publish('Setting', JSON.stringify(thresholds), { retain: true });
     }
   });
-}
-
-function handleRequestSetting() {
-    client.publish('Setting', JSON.stringify(thresholds), (err) => {
-        if(err) console.error('Failed to publish to Setting', err);
-        else console.log(`Published current settings to Setting topic.`);
-    });
 }
 
 client.on('error', (err) => {

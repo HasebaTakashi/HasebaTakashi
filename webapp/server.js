@@ -14,6 +14,9 @@ const wss = new WebSocketServer({ server });
 const MQTT_BROKER_URL = 'mqtt://localhost:1883';
 const mqttClient = mqtt.connect(MQTT_BROKER_URL);
 
+// --- State Cache ---
+let lastKnownSettings = null;
+
 // --- MQTT Client Logic ---
 mqttClient.on('connect', () => {
   console.log('Connected to MQTT broker');
@@ -25,9 +28,6 @@ mqttClient.on('connect', () => {
     if (err) console.error('Failed to subscribe to Setting', err);
     else console.log('Subscribed to Setting');
   });
-
-  // Request initial settings on connect
-  mqttClient.publish('RequestSetting', '');
 });
 
 mqttClient.on('message', (topic, message) => {
@@ -42,6 +42,7 @@ mqttClient.on('message', (topic, message) => {
     type = 'setting';
     try {
         payload = JSON.parse(message.toString());
+        lastKnownSettings = payload; // Cache the latest settings
     } catch(e) {
         console.error('Could not parse settings JSON', e);
         return;
@@ -50,6 +51,7 @@ mqttClient.on('message', (topic, message) => {
 
   if (type) {
     const wsMessage = JSON.stringify({ type, payload });
+    // Broadcast to all clients
     wss.clients.forEach(client => {
       if (client.readyState === require('ws').OPEN) {
         client.send(wsMessage);
@@ -65,6 +67,13 @@ mqttClient.on('error', (err) => {
 // --- WebSocket Server Logic ---
 wss.on('connection', ws => {
   console.log('WebSocket client connected');
+
+  // On new connection, send the last known settings immediately
+  if (lastKnownSettings) {
+    console.log('Sending cached settings to new client.');
+    ws.send(JSON.stringify({ type: 'setting', payload: lastKnownSettings }));
+  }
+
   ws.on('close', () => {
     console.log('WebSocket client disconnected');
   });
