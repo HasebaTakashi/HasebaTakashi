@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLC Style HMI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>HMI Panel</h1>
+        </header>
+
+        <div class="main-content">
+            <div class="controls">
+                <h2>Controls</h2>
+                <button class="btn" id="btn-1">Button 1</button>
+                <button class="btn" id="btn-2">Button 2</button>
+                <button class="btn" id="btn-3">Button 3</button>
+            </div>
+
+            <div class="displays">
+                <h2>Data Display</h2>
+                <div class="display-group">
+                    <label for="data-1">Data 1:</label>
+                    <div class="numeric-display" id="data-1">0.00</div>
+                </div>
+                <div class="display-group">
+                    <label for="data-2">Data 2:</label>
+                    <div class="numeric-display" id="data-2">0.00</div>
+                </div>
+                <div class="display-group">
+                    <label for="data-3">Data 3:</label>
+                    <div class="numeric-display" id="data-3">0.00</div>
+                </div>
+            </div>
+
+            <div class="graph-container">
+                <h2>Trend Graph</h2>
+                <canvas id="trendChart"></canvas>
+                <div class="graph-options">
+                    <label><input type="checkbox" id="check-data-1" checked> Data 1</label>
+                    <label><input type="checkbox" id="check-data-2" checked> Data 2</label>
+                    <label><input type="checkbox" id="check-data-3" checked> Data 3</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-display">
+            <h2>Configuration</h2>
+            <pre id="config-output">No config received yet.</pre>
+        </div>
+
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
