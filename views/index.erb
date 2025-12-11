@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-time Data</title>
+</head>
+<body>
+  <h1>Real-time Data</h1>
+  <div><strong>Strain Average:</strong> <span id="str_ave"></span></div>
+  <div><strong>Accelerometer 1 RMS:</strong> <span id="acc1_rms"></span></div>
+  <div><strong>Accelerometer 2 RMS:</strong> <span id="acc2_rms"></span></div>
+  <div><strong>Temperature 1:</strong> <span id="temp1"></span></div>
+  <div><strong>Temperature 2:</strong> <span id="temp2"></span></div>
+  <div><strong>Temperature 3:</strong> <span id="temp3"></span></div>
+  <div><strong>Communication Rate:</strong> <span id="comm_rate"></span></div>
+
+  <script>
+    const socket = new WebSocket(`ws://${window.location.host}/socket`);
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      document.getElementById('str_ave').textContent = data.str_ave;
+      document.getElementById('acc1_rms').textContent = data.acc1_rms;
+      document.getElementById('acc2_rms').textContent = data.acc2_rms;
+      document.getElementById('temp1').textContent = data.temp1;
+      document.getElementById('temp2').textContent = data.temp2;
+      document.getElementById('temp3').textContent = data.temp3;
+      document.getElementById('comm_rate').textContent = data.comm_rate;
+    };
+  </script>
+</body>
+</html>
